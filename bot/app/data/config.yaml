@@ -1,0 +1,18 @@
+ANTISNIPER: 0 # Не трогать
+CURRENCY: $ # Не трогать
+DATABASE: bot_database # [ИМЯ_БД] из пункта выше
+HELP: help.mp4 # Название видео для помощи в папке static
+HOST: localhost # хост базы данных, если просто на локальной машине, то оставить
+LOGO: logo.jpeg # Название файла с логотипом в папке static
+LOOSE_NOTIFICATION: true # Не трогать
+PASSWORD: Bot12321~ # пароль от  базы данных
+SETTINGS:
+  en: 'Auction rules
+
+    English'
+  ru: "\u041F\u0440\u0430\u0432\u0438\u043B\u0430 \u0430\u0443\u043A\u0446\u0438\u043E\
+    \u043D\u0430\n\u041D\u0430 \u0440\u0443\u0441\u0441\u043A\u043E\u043C"
+STEP: 1,5,10,50,100,200 # Не трогать
+USER: root # пользователь в базе данных, не трогать
+WIN_NOTIFICATION: true # Не трогать
+bot_token: 6792768624:AAGupMWtphlk68PUaEPAfWS_D_jNrnLmi2A # API токен для бота
