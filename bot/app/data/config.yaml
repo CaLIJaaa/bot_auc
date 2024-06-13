@@ -1,11 +1,11 @@
 ANTISNIPER: 0 # Не трогать
 CURRENCY: $ # Не трогать
-DATABASE: BOT_DATABASE # [ИМЯ_БД] из пункта выше
+DATABASE: bot_database # [ИМЯ_БД] из пункта выше
 HELP: help.mp4 # Название видео для помощи в папке static
 HOST: localhost # хост базы данных, если просто на локальной машине, то оставить
 LOGO: logo.jpeg # Название файла с логотипом в папке static
 LOOSE_NOTIFICATION: true # Не трогать
-PASSWORD: Bot12321 # пароль от  базы данных
+PASSWORD: Bot12321~ # пароль от  базы данных
 SETTINGS:
   en: 'Auction rules
 
