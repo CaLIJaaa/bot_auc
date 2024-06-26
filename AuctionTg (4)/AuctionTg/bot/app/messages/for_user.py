@@ -14,6 +14,14 @@ def start_msg(tg_id: int):
     msg = get_msg_lang('hello_msg', tg_id)
     return msg
 
+def payment_msg(tg_id: int):
+    msg = get_msg_lang('payment_msg', tg_id)
+    return msg
+
+def pay_way_msg(tg_id: int):
+    msg = get_msg_lang('pay_way_msg', tg_id)
+    return msg
+
 def menu_msg(tg_id: int) -> str:
     msg = get_msg_lang('user_menu_msg', tg_id)
     return msg
@@ -22,6 +30,13 @@ def active_auctions(tg_id: int, type: str) -> str:
     if len(Auction.get_opened_auctions_by_type(type)) == 0:
         msg = get_msg_lang('no_auctions_msg', tg_id)
     else:
+        msg = get_msg_lang('yes_auctions_msg', tg_id)
+    return msg
+
+def paymentURL(tg_id: int, type: str) -> str:
+    if type == 'TON':
+        msg = get_msg_lang('no_auctions_msg', tg_id)
+    elif type == 'BITCOIN':
         msg = get_msg_lang('yes_auctions_msg', tg_id)
     return msg
 
@@ -61,6 +76,10 @@ def rules_msg(tg_id: int) -> str:
 
 def winners_msg(tg_id: int, money: int) -> str:
     msg = (get_msg_lang('user_win_msg', tg_id) % money)
+    return msg
+
+def successful_payment_msg(tg_id: int, auction_name: str) -> str:
+    msg = (get_msg_lang('user_successful_payment_msg', tg_id) % auction_name)
     return msg
 
 def losers_msg(tg_id: int, auction: str) -> str:

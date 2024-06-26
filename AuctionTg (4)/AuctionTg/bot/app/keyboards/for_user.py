@@ -37,6 +37,40 @@ def get_type_auction_kb(user_id: int) -> ReplyKeyboardMarkup:
     )
     return keyboard.as_markup()
 
+def get_payment_kb(user_id: int, payment_url: str) -> ReplyKeyboardMarkup:
+    """
+    Клавиатура с оплатой
+    """
+    keyboard = InlineKeyboardBuilder()
+    keyboard.button(
+        text = get_msg_lang('payment_msg', user_id),
+        url=payment_url
+    )
+    return keyboard.as_markup()
+
+def get_pay_way_kb(auction_id: int, user_id: int, amount: int) -> ReplyKeyboardMarkup:
+    """
+    Клавиатура с выбором типа оплаты
+    """
+    keyboard = InlineKeyboardBuilder()
+    keyboard.button(
+        text = "USDT",
+        callback_data=cbd.TypePayCallback(pay_type='USDT', auction_id=auction_id, user_id=user_id, amount=amount)
+    )
+    keyboard.button(
+        text = "ETH",
+        callback_data=cbd.TypePayCallback(pay_type='ETH', auction_id=auction_id, user_id=user_id, amount=amount)
+    )
+    keyboard.button(
+        text = "TON",
+        callback_data=cbd.TypePayCallback(pay_type='TON', auction_id=auction_id, user_id=user_id, amount=amount)
+    )
+    keyboard.button(
+        text = "BITCOIN",
+        callback_data=cbd.TypePayCallback(pay_type='BTC', auction_id=auction_id, user_id=user_id, amount=amount)
+    )
+    return keyboard.as_markup()
+
 def get_auctions_kb(user_id: int, type: str) -> ReplyKeyboardMarkup:
     """
     Клавиатура с аукционами

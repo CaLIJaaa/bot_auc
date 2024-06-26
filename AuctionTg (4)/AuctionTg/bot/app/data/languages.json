@@ -7,6 +7,14 @@
         "ru": "Привет, я PuninWine Auction bot!\nУчаствуй в аукционах на коллекционные вина и виски вместе со мной!",
         "en": "Hello, I am PuninWine Auction bot!\nTake part in the auctions of collectible wines and whiskey with me!"
     },
+    "payment_msg": {
+        "ru": "Оплатить",
+        "en": "Pay"
+    },
+    "pay_way_msg": {
+        "ru": "Выберите способ оплаты",
+        "en": "Choose Pay Way"
+    },
     "current_auctions_msg": {
         "ru": "Посмотреть текущие аукционы",
         "en": "See current auctions"
@@ -52,8 +60,8 @@
         "en": "Unfortunately, you lost in the auction %s\nThank you for participating, and we look forward to seeing you in the next auction!"
     },
     "user_win_msg": {
-        "ru": "Поздравляю победителя аукциона!\nЛот продан за %s $\nОплатить вы можете по кнопке ниже",
-        "en": "Congratulations to the auction winner!\nThe lot was sold for %s $\nYou can pay using the button below"
+        "ru": "Поздравляю победителя аукциона!\nЛот продан за %s $\nВыберите способ оплаты",
+        "en": "Congratulations to the auction winner!\nThe lot was sold for %s $\nChoose payment method"
     },
     "payment_method_1_msg": {
         "ru": "USDT TRC20",
@@ -364,8 +372,12 @@
         "en": "Auction ended!\nThe lot was sold for %s$\nAwaiting payment from the winner.\nContact the auction winner @%s"
     },
     "admin_notification_successful_payment_msg": {
-        "ru": "Победитель оплатил лот.\nСвяжитесь с победителем для завершения сделки: %s",
-        "en": "The winner has paid for the lot.\nContact the winner to complete the transaction: %s"
+        "ru": "Победитель оплатил лот.\nСвяжитесь с победителем для завершения сделки: @%s",
+        "en": "The winner has paid for the lot.\nContact the winner to complete the transaction: @%s"
+    },
+    "admin_notification_expired_payment_msg": {
+        "ru": "Победитель @%s не оплатил лот.\nТеперь вы можете связаться со вторым и третьим местом \n@%s \n@%s\nцена - %s",
+        "en": "The winner @%s did not pay for the lot.\n Now you can contact the second and third place \n@%s\n@%s\nцена - %s"
     },
     "error_msg": {
         "ru": "Извините, я вас не понял",

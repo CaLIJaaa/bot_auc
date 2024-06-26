@@ -14,12 +14,16 @@ import app.messages.for_admin as msg_adm
 from app.DB.DB import User, Auction, Bid
 from app.helper.config import Config
 import os
-import json
+from app.cryptoPay import cryptoPay
+import _thread
 
 router = Router()
+crypto = cryptoPay.Crypto()
 
 class get_lang(StatesGroup):
     lang_add = State()
+
+_thread.start_new_thread(crypto.checkInvoices, ())
 
 STATIC_PATH = os.path.join(os.path.dirname(__file__), '../static/')
 
@@ -35,6 +39,28 @@ async def cmd_start(message: Message):
             await message.answer(
                 msg.start_msg(message.from_user.id),
                 reply_markup=kb_usr.get_type_auction_kb(message.from_user.id)
+            )
+    except BaseException:
+        pass
+
+@router.message(Command("payment")) 
+async def cmd_start(message: Message):
+    try:
+        if len(User.get_user_by_tg_id(message.from_user.id)) == 0:
+            await message.answer(
+                msg.lang_msg(),
+                reply_markup=kb_usr.get_lang_kb()
+            )
+        else:
+            # url = crypto.createInvoice()
+            # await message.answer(
+            #     msg.payment_msg(message.from_user.id),
+            #     reply_markup=kb_usr.get_payment_kb(message.from_user.id, payment_url=url)
+            # )
+            print(crypto.getInvoices().get('items')[0])
+            await message.answer(
+                msg.pay_way_msg(message.from_user.id),
+                reply_markup=kb_usr.get_pay_way_kb()
             )
     except BaseException:
         pass
@@ -66,6 +92,23 @@ async def answer_auctions(query: CallbackQuery, callback_data: cbd.TypeAUCallbac
         await query.message.edit_text(
             text=msg.active_auctions(query.from_user.id, callback_data.auction_type),
             reply_markup=kb_usr.get_auctions_kb(query.from_user.id, callback_data.auction_type)
+        )
+    except BaseException:
+        pass
+
+@router.callback_query(cbd.TypePayCallback.filter())
+async def answer_payment(query: CallbackQuery, callback_data: cbd.TypePayCallback):
+    try:
+        payment_url = crypto.createInvoice(callback_data.pay_type, callback_data.amount, callback_data.auction_id)
+        if payment_url == None:
+            await query.message.edit_text(
+                text="Server error",
+            )
+            return
+        
+        await query.message.edit_text(
+            text=msg.winners_msg(callback_data.user_id, callback_data.amount),
+            reply_markup=kb_usr.get_payment_kb(query.from_user.id, payment_url=payment_url)
         )
     except BaseException:
         pass

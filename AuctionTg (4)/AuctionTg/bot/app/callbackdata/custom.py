@@ -12,6 +12,12 @@ class LangCallback(CallbackData, prefix="lang"):
 class TypeAUCallback(CallbackData, prefix="typeAu"):
     auction_type: str
 
+class TypePayCallback(CallbackData, prefix="typePay"):
+    pay_type: str
+    auction_id: int
+    user_id: int
+    amount: int
+
 class AuctionCallback(CallbackData, prefix="Auction_id"):
     auction_id: int
 

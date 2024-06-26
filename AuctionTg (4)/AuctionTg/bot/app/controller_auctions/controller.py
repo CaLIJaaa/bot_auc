@@ -59,6 +59,25 @@ class AuctionControllerDB():
             conn.close()
         return auctions
     
+    def expired_auction():
+        """
+        Закрывает все аукционы
+        """
+        auctions = []
+        try:
+            conn, cursor = AuctionControllerDB._get_connection_cursor()
+            cursor.execute("SELECT `id` FROM `auction` WHERE (`time_start` - CURRENT_TIMESTAMP() + TIME_TO_SEC(`time_leinght`) + %s) < 0 AND `status`='closed' AND `statusPay` = 'active';", (conf.get_value('PAY_EXPARATION')))
+            auctions = cursor.fetchall()
+            cursor.execute("UPDATE `auction` SET `statusPay`  = 'closed' WHERE (`time_start` - CURRENT_TIMESTAMP() + TIME_TO_SEC(`time_leinght`) + %s) < 0 AND `status` = 'closed' AND `statusPay` = 'active';", (conf.get_value('PAY_EXPARATION')))
+            
+            conn.commit()
+        except BaseException:
+            pass
+        finally:
+            cursor.close()
+            conn.close()
+        return auctions
+    
     def get_losers_by_auction_id(auction_id: int):
         """
         Возвращает список пользователей, которые не смогли победить в аукционе
@@ -95,11 +114,52 @@ class AuctionControllerDB():
             conn.close()
         return winner, money
     
+    def get_paid_auctions():
+            """
+            Возвращает оплаченные аукционы
+            """
+            auction = []
+            try:
+                conn, cursor = AuctionControllerDB._get_connection_cursor()
+                cursor.execute("SELECT * FROM `auction` WHERE `statusPay` = %s;", ('paid', ))
+                auction = cursor.fetchall()
+            except BaseException:
+                pass
+            finally:
+                cursor.close()
+                conn.close()
+            return auction
+    
+    def get_expired_auctions():
+            """
+            Возвращает оплаченные аукционы
+            """
+            auction = []
+            try:
+                conn, cursor = AuctionControllerDB._get_connection_cursor()
+                cursor.execute("SELECT * FROM `auction` WHERE `statusPay` = %s;", ('expired', ))
+                auction = cursor.fetchall()
+            except BaseException:
+                pass
+            finally:
+                cursor.close()
+                conn.close()
+            return auction
+    
 def controller(bot, loop):
     while True:
         time_to_close = AuctionControllerDB.get_min_time_to_update()
         time_to_close = time_to_close if time_to_close else 0
         auctions = AuctionControllerDB.close_auction()
+        paidAuctions = AuctionControllerDB.get_paid_auctions()
+        expired = AuctionControllerDB.expired_auction()
+
+        if len(expired) > 0:
+            between_callback_expired(expired, bot, loop=loop)
+
+        if len(paidAuctions) > 0:
+            between_callback_paid(paidAuctions, bot, loop=loop)
+
         if len(auctions) > 0:    
             between_callback(auctions, bot, loop=loop)
         if time_to_close < 10:
@@ -111,6 +171,18 @@ def between_callback(*args, loop):
     asyncio.set_event_loop(loop)
 
     send_fut = asyncio.run_coroutine_threadsafe(send_notification(*args), loop)
+    send_fut.result()
+
+def between_callback_paid(*args, loop):
+    asyncio.set_event_loop(loop)
+
+    send_fut = asyncio.run_coroutine_threadsafe(send_paid(*args), loop)
+    send_fut.result()
+
+def between_callback_expired(*args, loop):
+    asyncio.set_event_loop(loop)
+
+    send_fut = asyncio.run_coroutine_threadsafe(send_expired(*args), loop)
     send_fut.result()
 
 async def send_notification(auction, bot):
@@ -132,7 +204,7 @@ async def send_notification(auction, bot):
             try:
                 await bot.send_message(user[0]['tg_id'], 
                                     msg.winners_msg(user[0]['tg_id'], money),
-                                    reply_markup=kb_usr.get_back_kb(user[0]['tg_id']))
+                                    reply_markup=kb_usr.get_pay_way_kb(auction[0]['id'], user[0]['tg_id'], money))
                 admins = User.get_admins()
                 for admin in admins:
                     try:
@@ -143,3 +215,42 @@ async def send_notification(auction, bot):
         
             except BaseException:
                 pass
+
+    Auction.update_auction(auction[0]['id'], 'statusPay', 'active')
+
+async def send_paid(auction, bot):
+    user, money = AuctionControllerDB.get_winner_by_auction_id(auction[0]['id'])
+    auction_name = Auction.get_auction_by_id(auction[0]['id'])
+    auction_name = auction_name[0]['name'] if len(auction_name) > 0 else ''
+    try:
+        await bot.send_message(user[0]['tg_id'], 
+                                msg.successful_payment_msg(user[0]['tg_id'], auction_name),
+                                reply_markup=kb_usr.get_back_kb(user[0]['tg_id']))
+        admins = User.get_admins()
+        for admin in admins:
+            try:
+                await bot.send_message(admin['tg_id'], 
+                msg_adm.successful_payment_msg(user[0]['tg_id'], user[0]['tg_link']))
+            except BaseException:
+                pass
+        Auction.update_auction(auction[0]['id'], 'statusPay', 'closed')
+    except BaseException:
+        pass
+
+async def send_expired(auction, bot):
+    winner, money = AuctionControllerDB.get_winner_by_auction_id(auction[0]['id'])
+    lossers = AuctionControllerDB.get_losers_by_auction_id(auction[0]['id'])
+    print(winner, lossers)
+    second_place = User.get_user_by_id(lossers[0]['user_id'])[0]['tg_link'] if len(lossers) > 0 else ''
+    third_place = User.get_user_by_id(lossers[0]['user_id'])[0]['tg_link'] if len(lossers) > 1 else ''
+    try:
+        admins = User.get_admins()
+        for admin in admins:
+            try:
+                await bot.send_message(admin['tg_id'], 
+                msg_adm.expired_payment_msg(winner[0]['tg_id'], winner[0]['tg_link'], second_place, third_place, money))
+            except BaseException:
+                pass
+        Auction.update_auction(auction[0]['id'], 'statusPay', 'closed')
+    except BaseException:
+        pass

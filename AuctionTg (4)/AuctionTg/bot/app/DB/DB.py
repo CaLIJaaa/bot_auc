@@ -207,6 +207,16 @@ class Auction():
         cursor.execute("SELECT * FROM `auction` WHERE `status` != %s;", ('deleted', ))
         return cursor.fetchall()
     
+    def get_auction_by_status_pay():
+        """
+        Возвращает значения из `auction` по `tg_id` пользователя
+        """
+        conn, cursor = Auction._get_connection_cursor()
+        # cursor.execute("SELECT * FROM `user` WHERE `tg_id` = %s;", (str(tg_id), ))
+        # user_id = cursor.fetchall()[0]['id']
+        cursor.execute("SELECT * FROM `auction` WHERE `statusPay` = %s;", ('active', ))
+        return cursor.fetchall()
+    
     def delete_auction(auction_id: int):
         """
         Удаляет аукцион по его `id`
@@ -302,6 +312,8 @@ class Auction():
                     to_update = 'price'
                 case 'time_leinght':
                     to_update = 'time_leinght'
+                case 'statusPay':
+                    to_update = 'statusPay'
                 case _:
                     return
             cursor.execute("UPDATE `auction` SET `" + to_update + "` = %s WHERE `id` = %s;",
@@ -313,6 +325,75 @@ class Auction():
             cursor.close()
             conn.close()
         return 
+    
+    def update_payment_auction(
+        auction_id: int,
+        invoice_id: int,
+        asset: str,
+        amount: str,
+        payment_url: str
+    ) -> int:
+        """
+        Обновляет аукцион по его `id` (только поля для оплаты)
+        """
+        try:
+            conn, cursor = Auction._get_connection_cursor()
+
+            cursor.execute(
+                "UPDATE `auction` SET `invoice_id` = %s, `asset` = %s, `amount` = %s, `payment_url` = %s WHERE `id` = %s;",
+                (invoice_id, asset, amount, payment_url, auction_id)
+            )
+            conn.commit()
+        except BaseException:
+            pass
+        finally:
+            cursor.close()
+            conn.close()
+        return 
+    
+    def update_status_auction(
+        auction_id: int,
+        invoice_id: int,
+        asset: str,
+        statusPay: str,
+        payment_url: str
+    ) -> int:
+        """
+        Обновляет аукцион по его `id` (только поля для оплаты)
+        """
+        try:
+            conn, cursor = Auction._get_connection_cursor()
+
+            cursor.execute(
+                "UPDATE `auction` SET `invoice_id` = %s, `asset` = %s, `statusPay` = %s, `payment_url` = %s WHERE `id` = %s;",
+                (invoice_id, asset, statusPay, payment_url, auction_id)
+            )
+            conn.commit()
+        except BaseException:
+            pass
+        finally:
+            cursor.close()
+            conn.close()
+        return 
+    
+    def expired_auction():
+        """
+        Закрывает все аукционы
+        """
+        auctions = []
+        try:
+            conn, cursor = Auction._get_connection_cursor()
+            cursor.execute("SELECT `id` FROM `auction` WHERE (`time_start` - CURRENT_TIMESTAMP() + TIME_TO_SEC(`time_leinght`) + 60) < 0 AND `status`='closed';")
+            auctions = cursor.fetchall()
+            cursor.execute("UPDATE `auction` SET `statusPay`  = 'closed' WHERE (`time_start` - CURRENT_TIMESTAMP() + TIME_TO_SEC(`time_leinght`) + 60) < 0 AND `status` = 'closed';")
+            
+            conn.commit()
+        except BaseException:
+            pass
+        finally:
+            cursor.close()
+            conn.close()
+        return auctions
 
     
 class Bid():

@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `user` (
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
-COLLATE=utf8mb4_0900_ai_ci;
+COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `auction` (
 	id BIGINT auto_increment NOT NULL,
@@ -23,6 +23,11 @@ CREATE TABLE IF NOT EXISTS `auction` (
 	produser varchar(100) NULL,
 	description varchar(200) NULL,
 	price FLOAT NULL,
+	invoice_id BIGINT NULL,
+	asset varchar(50) NULL,
+	amount varchar(100) NULL,
+	statusPay ENUM('active', 'paid', 'expired', 'closed') NULL,
+	payment_url varchar(200) NULL,
 	time_start TIMESTAMP NULL,
 	time_leinght TIME NOT NULL,
 	status ENUM('created', 'opened', 'closed', 'deleted') NOT NULL,
@@ -31,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `auction` (
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
-COLLATE=utf8mb4_0900_ai_ci;
+COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `bid` (
 	id BIGINT auto_increment NOT NULL,
@@ -45,4 +50,4 @@ CREATE TABLE IF NOT EXISTS `bid` (
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
-COLLATE=utf8mb4_0900_ai_ci;
+COLLATE=utf8mb4_unicode_ci;
