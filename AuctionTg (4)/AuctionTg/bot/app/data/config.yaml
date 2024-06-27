@@ -1,20 +1,21 @@
-ANTISNIPER: 0 # Не трогать
-CURRENCY: $ # Не трогать
-DATABASE: auction # [ИМЯ_БД] из пункта выше
-HELP: help.mp4 # Название видео для помощи в папке static
-HOST: localhost # хост базы данных, если просто на локальной машине, то оставить
-LOGO: logo.jpeg # Название файла с логотипом в папке static
-LOOSE_NOTIFICATION: true # Не трогать
-PASSWORD: admin # пароль от  базы данных
+ANTISNIPER: 40
+ANTISNIPER_FIX: 300
+CRYPTO_PAY_TOKEN: 14700:AATC0ICMvNqTDIIcm9nwrerxCvV8nD8bqWh
+CURRENCY: $
+DATABASE: auction
+HELP: help.mp4
+HOST: localhost
+LOGO: logo.jpeg
+LOOSE_NOTIFICATION: true
+PASSWORD: admin
+PAY_EXPARATION: 400
 SETTINGS:
   en: 'Auction rules
 
     English'
   ru: "\u041F\u0440\u0430\u0432\u0438\u043B\u0430 \u0430\u0443\u043A\u0446\u0438\u043E\
     \u043D\u0430\n\u041D\u0430 \u0440\u0443\u0441\u0441\u043A\u043E\u043C"
-STEP: 1,5,10,50,100,200 # Не трогать
-USER: root # пользователь в базе данных, не трогать
-WIN_NOTIFICATION: true # Не трогать
-bot_token: 7463078749:AAFwQSv23QMZPRlzE4R3S-R4hON8IcRZj7Q # API токен для бота 
-CRYPTO_PAY_TOKEN: 14700:AATC0ICMvNqTDIIcm9nwrerxCvV8nD8bqWh
-PAY_EXPARATION: 43200 # Время на оплату лота
+STEP: 1,5,10,50,100,200
+USER: root
+WIN_NOTIFICATION: true
+bot_token: 7463078749:AAFwQSv23QMZPRlzE4R3S-R4hON8IcRZj7Q

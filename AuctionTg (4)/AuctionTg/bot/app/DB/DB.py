@@ -170,7 +170,7 @@ class Auction():
         Возвращает время до конца из таблицы `auction` по его `id`
         """
         conn, cursor = Auction._get_connection_cursor()
-        cursor.execute("SELECT SEC_TO_TIME(`time_start` - CURRENT_TIMESTAMP() + TIME_TO_SEC(`time_leinght`)) as left_time FROM `auction` WHERE `id` = %s;", (str(auction_id), ))
+        cursor.execute("SELECT SEC_TO_TIME(TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP(), TIMESTAMPADD(SECOND, TIME_TO_SEC(time_leinght), time_start))) as left_time FROM `auction` WHERE `id` = %s;", (str(auction_id), ))
         return cursor.fetchall()
     
     def get_auction_by_id(auction_id: int):
@@ -383,9 +383,9 @@ class Auction():
         auctions = []
         try:
             conn, cursor = Auction._get_connection_cursor()
-            cursor.execute("SELECT `id` FROM `auction` WHERE (`time_start` - CURRENT_TIMESTAMP() + TIME_TO_SEC(`time_leinght`) + 60) < 0 AND `status`='closed';")
+            cursor.execute("SELECT `id` FROM `auction` WHERE TIMESTAMPADD(SECOND, TIME_TO_SEC(time_leinght), time_start) < NOW() AND `status`='closed';")
             auctions = cursor.fetchall()
-            cursor.execute("UPDATE `auction` SET `statusPay`  = 'closed' WHERE (`time_start` - CURRENT_TIMESTAMP() + TIME_TO_SEC(`time_leinght`) + 60) < 0 AND `status` = 'closed';")
+            cursor.execute("UPDATE `auction` SET `statusPay`  = 'closed' WHERE TIMESTAMPADD(SECOND, TIME_TO_SEC(time_leinght), time_start) < NOW() AND `status` = 'closed';")
             
             conn.commit()
         except BaseException:
@@ -412,17 +412,17 @@ class Bid():
         """
         conn, cursor = Bid._get_connection_cursor()
         try:
-            cursor.execute("SELECT (`time_start` - CURRENT_TIMESTAMP() + TIME_TO_SEC(`time_leinght`)) > 0 as `result` FROM `auction` WHERE `id` = %s;", (str(auction_id), ))
+            cursor.execute("SELECT TIMESTAMPADD(SECOND, TIME_TO_SEC(time_leinght), time_start) > NOW() as `result` FROM `auction` WHERE `id` = %s;", (str(auction_id), ))
             results = cursor.fetchall()
             if len(results) > 0 and results[0]['result'] != 0:
                 cursor.execute("INSERT INTO `bid` (`auction_id`, `user_id`, `money`, `time_bid`) VALUES (%s, (SELECT `id` FROM `user` WHERE `tg_id` = %s), \
                                 IFNULL((SELECT MAX(money ) FROM (SELECT * FROM `bid`) as b WHERE b.auction_id = %s), (SELECT a.price FROM auction a WHERE a.id=%s))+%s, CURRENT_TIMESTAMP());",
                             (str(auction_id), str(tg_id), str(auction_id), str(auction_id), money))
-                cursor.execute("SELECT (`time_start` - CURRENT_TIMESTAMP() + TIME_TO_SEC(`time_leinght`)) as `result` FROM `auction` WHERE `id` = %s;", (str(auction_id), ))
+                cursor.execute("SELECT TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP(), TIMESTAMPADD(SECOND, TIME_TO_SEC(time_leinght), time_start)) as `result` FROM `auction` WHERE `id` = %s;", (str(auction_id), ))
                 try:
                     time = cursor.fetchall()[0]['result']
-                    if time < conf.get_value("ANTISNIPER"):
-                        cursor.execute("UPDATE `auction` SET `time_leinght` = `time_leinght` + SEC_TO_TIME(%s) WHERE `id` = %s;", (str(conf.get_value("ANTISNIPER")), str(auction_id), ))
+                    if time < conf.get_value("ANTISNIPER_FIX"):
+                        cursor.execute("UPDATE `auction` SET `time_leinght` = ADDTIME(`time_leinght`, SEC_TO_TIME(%s)) WHERE `id` = %s;", (str(conf.get_value("ANTISNIPER")), str(auction_id), ))
                 except BaseException:
                     pass
                 conn.commit()

@@ -37,7 +37,7 @@ class AuctionControllerDB():
         Возвращает минимальное время до обновления аукциона
         """
         conn, cursor = AuctionControllerDB._get_connection_cursor()
-        cursor.execute("SELECT MIN(`time_start` - CURRENT_TIMESTAMP() + TIME_TO_SEC(`time_leinght`)) as `result` FROM `auction` WHERE `status`='opened';")
+        cursor.execute("SELECT MIN(TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP(), TIMESTAMPADD(SECOND, TIME_TO_SEC(time_leinght), time_start))) AS `result` FROM `auction` WHERE `status`='opened';")
         return cursor.fetchall()[0]['result']
     
     def close_auction():
@@ -47,9 +47,9 @@ class AuctionControllerDB():
         auctions = []
         try:
             conn, cursor = AuctionControllerDB._get_connection_cursor()
-            cursor.execute("SELECT `id` FROM `auction` WHERE (`time_start` - CURRENT_TIMESTAMP() + TIME_TO_SEC(`time_leinght`)) < 0 AND `status`='opened';")
+            cursor.execute("SELECT `id` FROM `auction` WHERE TIMESTAMPADD(SECOND, TIME_TO_SEC(time_leinght), time_start) < NOW() AND `status`='opened';")
             auctions = cursor.fetchall()
-            cursor.execute("UPDATE `auction` SET `status`  = 'closed' WHERE (`time_start` - CURRENT_TIMESTAMP() + TIME_TO_SEC(`time_leinght`)) < 0 AND `status` = 'opened';")
+            cursor.execute("UPDATE `auction` SET `status`  = 'closed' WHERE TIMESTAMPADD(SECOND, TIME_TO_SEC(time_leinght), time_start) < NOW() AND `status` = 'opened';")
             
             conn.commit()
         except BaseException:
@@ -61,14 +61,14 @@ class AuctionControllerDB():
     
     def expired_auction():
         """
-        Закрывает все аукционы
+        Возвращает все аукционы, в которых кончился срок оплаты
         """
         auctions = []
         try:
             conn, cursor = AuctionControllerDB._get_connection_cursor()
-            cursor.execute("SELECT `id` FROM `auction` WHERE (`time_start` - CURRENT_TIMESTAMP() + TIME_TO_SEC(`time_leinght`) + %s) < 0 AND `status`='closed' AND `statusPay` = 'active';", (conf.get_value('PAY_EXPARATION')))
+            cursor.execute("SELECT `id` FROM `auction` WHERE TIMESTAMPADD(SECOND, TIME_TO_SEC(time_leinght) + %s, time_start) < NOW() AND `status`='closed' AND `statusPay` = 'active';", (conf.get_value('PAY_EXPARATION')))
             auctions = cursor.fetchall()
-            cursor.execute("UPDATE `auction` SET `statusPay`  = 'closed' WHERE (`time_start` - CURRENT_TIMESTAMP() + TIME_TO_SEC(`time_leinght`) + %s) < 0 AND `status` = 'closed' AND `statusPay` = 'active';", (conf.get_value('PAY_EXPARATION')))
+            cursor.execute("UPDATE `auction` SET `statusPay`  = 'closed' TIMESTAMPADD(SECOND, TIME_TO_SEC(time_leinght) + %s, time_start) < NOW() AND `status`='closed' AND `statusPay` = 'active';", (conf.get_value('PAY_EXPARATION')))
             
             conn.commit()
         except BaseException:
@@ -230,7 +230,7 @@ async def send_paid(auction, bot):
         for admin in admins:
             try:
                 await bot.send_message(admin['tg_id'], 
-                msg_adm.successful_payment_msg(user[0]['tg_id'], user[0]['tg_link']))
+                msg_adm.successful_payment_msg(user[0]['tg_id'], user[0]['tg_link'], auction_name))
             except BaseException:
                 pass
         Auction.update_auction(auction[0]['id'], 'statusPay', 'closed')

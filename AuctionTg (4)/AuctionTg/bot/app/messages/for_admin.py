@@ -159,8 +159,8 @@ def winner_msg(tg_id: int, money: int, user_link: str) -> str:
     msg = (get_msg_lang('admin_notification_auction_end_msg', tg_id) % (str(money), user_link))
     return msg
 
-def successful_payment_msg(tg_id: int, user_link: str):
-    msg = (get_msg_lang('admin_notification_successful_payment_msg', tg_id) % user_link)
+def successful_payment_msg(tg_id: int, user_link: str, auction_name: str):
+    msg = (get_msg_lang('admin_notification_successful_payment_msg', tg_id) % (user_link, auction_name))
     return msg
 
 def expired_payment_msg(tg_id: int, user_link: str, second_place: str, third_place: str, money: int):

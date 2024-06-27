@@ -372,7 +372,7 @@
         "en": "Auction ended!\nThe lot was sold for %s$\nAwaiting payment from the winner.\nContact the auction winner @%s"
     },
     "admin_notification_successful_payment_msg": {
-        "ru": "Победитель оплатил лот.\nСвяжитесь с победителем для завершения сделки: @%s",
+        "ru": "Победитель оплатил лот.\nСвяжитесь с победителем для завершения сделки: @%s\nаукцион - %s",
         "en": "The winner has paid for the lot.\nContact the winner to complete the transaction: @%s"
     },
     "admin_notification_expired_payment_msg": {
