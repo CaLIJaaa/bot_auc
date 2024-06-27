@@ -69,6 +69,7 @@ def get_pay_way_kb(auction_id: int, user_id: int, amount: int) -> ReplyKeyboardM
         text = "BITCOIN",
         callback_data=cbd.TypePayCallback(pay_type='BTC', auction_id=auction_id, user_id=user_id, amount=amount)
     )
+    keyboard.adjust(1)
     return keyboard.as_markup()
 
 def get_auctions_kb(user_id: int, type: str) -> ReplyKeyboardMarkup:
