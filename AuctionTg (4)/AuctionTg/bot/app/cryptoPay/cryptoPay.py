@@ -65,4 +65,4 @@ class Crypto:
                             if item['status'] == 'paid' and auction['statusPay'] == 'active':
                                 Auction.update_auction(auction['id'], 'statusPay', 'paid')
 
-            sleep(5)
+            sleep(30)

@@ -102,6 +102,52 @@ def get_time_auction_creation_kb(user_id: int) -> ReplyKeyboardMarkup:
     keyboard.adjust(3)
     return keyboard.as_markup()
 
+def get_time_auction_change_kb(user_id: int, auction_id: int) -> ReplyKeyboardMarkup:
+    """
+    Клавиатура с кнопками времени
+    """
+    keyboard = InlineKeyboardBuilder()
+    keyboard.button(
+        text = get_msg_lang('admin_menu_create_duration_1_msg', user_id),
+        callback_data=cbd.ChangeTimeCallback(value='1000', auction_id=auction_id)
+    )
+    keyboard.button(
+        text = get_msg_lang('admin_menu_create_duration_2_msg', user_id),
+        callback_data=cbd.ChangeTimeCallback(value='1500', auction_id=auction_id)
+    )
+    keyboard.button(
+        text = get_msg_lang('admin_menu_create_duration_3_msg', user_id),
+        callback_data=cbd.ChangeTimeCallback(value='3000', auction_id=auction_id)
+    )
+
+    keyboard.button(
+        text = get_msg_lang('admin_menu_create_duration_4_msg', user_id),
+        callback_data=cbd.ChangeTimeCallback(value='10000', auction_id=auction_id)
+    )
+    keyboard.button(
+        text = get_msg_lang('admin_menu_create_duration_5_msg', user_id),
+        callback_data=cbd.ChangeTimeCallback(value='30000', auction_id=auction_id)
+    )
+    keyboard.button(
+        text = get_msg_lang('admin_menu_create_duration_6_msg', user_id),
+        callback_data=cbd.ChangeTimeCallback(value='60000', auction_id=auction_id)
+    )
+
+    keyboard.button(
+        text = get_msg_lang('admin_menu_create_duration_7_msg', user_id),
+        callback_data=cbd.ChangeTimeCallback(value='240000', auction_id=auction_id)
+    )
+    keyboard.button(
+        text = get_msg_lang('admin_menu_create_duration_8_msg', user_id),
+        callback_data=cbd.ChangeTimeCallback(value='360000', auction_id=auction_id)
+    )
+    keyboard.button(
+        text = get_msg_lang('admin_menu_create_duration_9_msg', user_id),
+        callback_data=cbd.ChangeTimeCallback(value='720000', auction_id=auction_id)
+    )
+    keyboard.adjust(3)
+    return keyboard.as_markup()
+
 def get_settings_menu_kb(user_id: int) -> ReplyKeyboardMarkup:
     """
     Клавиатура с настройками

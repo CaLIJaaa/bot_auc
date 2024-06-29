@@ -310,6 +310,33 @@ async def type_set_(query: CallbackQuery, state: FSMContext, callback_data: cbd.
     except BaseException:
         pass
 
+@router.callback_query(cbd.ChangeTimeCallback.filter())
+async def type_set_(query: CallbackQuery, state: FSMContext, callback_data: cbd.ChangeTimeCallback):
+    try:
+        if User.is_user_admin(query.from_user.id):
+            auction = Auction.get_auction_by_id(callback_data.auction_id)[0]
+            Auction.update_auction(callback_data.auction_id, 'time_leinght', callback_data.value)
+            if auction['picture'] == None: # Аукцион без фото
+
+                await query.message.answer(
+                    text=msg.msg_auction(query.from_user.id, callback_data.auction_id),
+                    reply_markup=kb_adm.get_actions_admin_kb(query.from_user.id, callback_data.auction_id)
+                )
+            elif auction['picture'] != None: # Аукцион с фото
+
+                photo = FSInputFile(
+                    os.path.join(STATIC_PATH, 
+                                    auction['picture'])
+                )
+
+                await query.message.answer_photo(
+                    photo=photo,
+                    caption=msg.msg_auction(query.from_user.id, callback_data.auction_id),
+                    reply_markup=kb_adm.get_actions_admin_kb(query.from_user.id, callback_data.auction_id)
+                )
+    except BaseException:
+        pass
+
 # ==============
 @router.callback_query(cbd.AdminMenuCallback.filter(F.page == "admin_menu_my_auc"))
 async def admin_menu_my_auc(query: CallbackQuery, callback_data: cbd.AdminMenuCallback):
@@ -444,7 +471,7 @@ async def picture_edit(query: CallbackQuery, callback_data: cbd.EditAuctionCallb
             case 'time_leinght':
                 await query.message.answer(
                     msg.time_leinght_set_msg(query.from_user.id),
-                    reply_markup=kb_adm.admin_get_back_kb(query.from_user.id)
+                    reply_markup=kb_adm.get_time_auction_change_kb(query.from_user.id, callback_data.auction_id)
                 )
                 await state.set_state(UpdateAuction.time_leinght_set)
 

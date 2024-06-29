@@ -31,6 +31,10 @@ class CreationAuctionTypeCallback(CallbackData, prefix="create_auction_type"):
 class SkipCallback(CallbackData, prefix="skip_creation"):
     value: str
 
+class ChangeTimeCallback(CallbackData, prefix="editTime_creation"):
+    value: str
+    auction_id: int
+
 class EditAuctionCallback(CallbackData, prefix="edit_auction"):
     auction_id: int
     page: str
