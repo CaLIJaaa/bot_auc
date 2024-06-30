@@ -131,7 +131,7 @@ def msg_auction(tg_id: int, auction_id: str) -> str:
     msg = (get_msg_lang('lot_msg', tg_id) % (auction['name'], 
                                              auction['type'], 
                                              auction['volume'], 
-                                             auction['abv'], 
+                                             f'{auction['abv']}%', 
                                              auction['country'], 
                                              auction['brand'], 
                                              auction['produser'], 
