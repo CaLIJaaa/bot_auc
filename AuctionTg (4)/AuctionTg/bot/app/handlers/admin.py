@@ -114,7 +114,7 @@ async def volume_set_(message: Message, state: FSMContext):
     try:
         if User.is_user_admin(message.from_user.id):
             volume = re.findall(r'[0-9]{1,}', message.text)
-            volume = int(volume[0]) if len(volume) > 0 else 0
+            volume = float(f'{volume[0]}.{volume[1]}') if len(volume) > 0 else 0
             await state.update_data(volume=volume)
             await message.answer(
                 text=msg.abv_set_msg(message.from_user.id),
@@ -129,7 +129,7 @@ async def abv_set_(message: Message, state: FSMContext):
     try:
         if User.is_user_admin(message.from_user.id):
             volume = re.findall(r'[0-9]{1,}', message.text)
-            volume = int(volume[0]) if len(volume) > 0 else 0
+            volume = float(f'{volume[0]}.{volume[1]}') if len(volume) > 0 else 0
             await state.update_data(abv=volume)
             await message.answer(
                 text=msg.country_set_msg(message.from_user.id),
