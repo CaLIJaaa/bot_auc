@@ -781,9 +781,10 @@ async def admin_menu_settings_detail_rules(query: CallbackQuery, callback_data: 
 async def rules_set_(message: Message, state: FSMContext):
     try:
         if User.is_user_admin(message.from_user.id):
+            userLang = User.get_user_by_tg_id(message.from_user.id)[0]['lang']
             conf = Config()
             rules = conf.get_value('SETTINGS')
-            rules['ru'] = message.text
+            rules[userLang if userLang else 'ru'] = message.text
             conf.set_value('SETTINGS', rules)
             await message.delete()
             await message.answer(

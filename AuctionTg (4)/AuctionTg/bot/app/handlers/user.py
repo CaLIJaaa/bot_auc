@@ -52,11 +52,6 @@ async def cmd_start(message: Message):
                 reply_markup=kb_usr.get_lang_kb()
             )
         else:
-            # url = crypto.createInvoice()
-            # await message.answer(
-            #     msg.payment_msg(message.from_user.id),
-            #     reply_markup=kb_usr.get_payment_kb(message.from_user.id, payment_url=url)
-            # )
             print(crypto.getInvoices().get('items')[0])
             await message.answer(
                 msg.pay_way_msg(message.from_user.id),

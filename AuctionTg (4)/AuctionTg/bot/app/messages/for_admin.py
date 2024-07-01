@@ -68,8 +68,9 @@ def settings_detail_currency_msg(tg_id: int) -> str:
 
 def settings_detail_rules_msg(tg_id: int) -> str:
     conf = Config()
+    userLang = User.get_user_by_tg_id(tg_id)[0]['lang']
     msg = (get_msg_lang('admin_menu_settings_detail_rules_msg', tg_id) %
-           (conf.get_value('SETTINGS')['ru'], ))
+           (conf.get_value('SETTINGS')[userLang], ))
     return msg
 
 def settings_detail_notification_msg(tg_id: int) -> str:
