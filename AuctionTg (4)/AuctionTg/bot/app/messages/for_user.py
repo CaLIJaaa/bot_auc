@@ -1,6 +1,6 @@
 from app.helper.i18n import get_msg_lang, get_msg_rules_lang
 from app.helper.config import Config
-from app.DB.DB import Auction, Bid
+from app.DB.DB import Auction, Bid, User
 import datetime
 
 def lang_msg(tg_id: int = None):
@@ -46,9 +46,10 @@ def msg_auction(tg_id: int, auction_id: str) -> str:
     user_bid = Bid.get_bid_by_tg_id(tg_id, auction_id)
     user_bid = user_bid[0]['money'] if len(user_bid) > 0 else '-'
     last_price = auction['money'] if auction['money'] else auction['price']
+    userLang = User.get_user_by_tg_id(tg_id)[0]['lang']
     msg = (get_msg_lang('lot_msg', tg_id) % (auction['name'], 
                                              auction['type'], 
-                                             auction['volume'], 
+                                             f'{auction['volume']} л' if userLang == 'ru' else f'{auction['volume'] * 100} cl', 
                                              f'{auction['abv']}%', 
                                              auction['country'], 
                                              auction['brand'], 

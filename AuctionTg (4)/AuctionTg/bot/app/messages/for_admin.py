@@ -127,10 +127,11 @@ def get_admin_menu_settings_make_bl_delete_done_msg(tg_id: int, nickname: str) -
 def msg_auction(tg_id: int, auction_id: str) -> str:
     auction = Auction.get_auction_by_id_with_bid(auction_id)[0]
     conf = Config()
+    userLang = User.get_user_by_tg_id(tg_id)[0]['lang']
     last_price = auction['money'] if auction['money'] else auction['price']
     msg = (get_msg_lang('lot_msg', tg_id) % (auction['name'], 
                                              auction['type'], 
-                                             auction['volume'], 
+                                             f'{auction['volume']} л' if userLang == 'ru' else f'{auction['volume'] * 100} cl', 
                                              f'{auction['abv']}%', 
                                              auction['country'], 
                                              auction['brand'], 
