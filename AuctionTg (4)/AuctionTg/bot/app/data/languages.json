@@ -112,12 +112,12 @@
         "en": "Specify the type of drink"
     },
     "admin_menu_create_volume_msg": {
-        "ru": "Укажите объём напитка или напишите SKIP, если не хотите указывать",
-        "en": "Specify the volume of the drink or write SKIP if you don't want to specify"
+        "ru": "Укажите объём напитка (только значение - число) или напишите SKIP, если не хотите указывать",
+        "en": "Specify the volume of the drink (only the value is a number) or write SKIP if you do not want to specify it"
     },
     "admin_menu_create_abv_msg": {
-        "ru": "Укажите крепость напитка или напишите SKIP, если не хотите указывать",
-        "en": "Specify the alcohol content (ABV) or write SKIP if you don't want to specify"
+        "ru": "Укажите крепость напитка (только значение - число) или напишите SKIP, если не хотите указывать",
+        "en": "Specify the alcohol content (ABV) (only the value is a number) or write SKIP if you don't want to specify"
     },
     "admin_menu_create_country_msg": {
         "ru": "Укажите страну напитка или напишите SKIP, если не хотите указывать",
