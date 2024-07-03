@@ -76,8 +76,8 @@
         "en": "Payment was successful!\nYou will be contacted soon about receiving the lot.\nThank you for participating in the %s auction. We look forward to seeing you in future auctions!"
     },
     "admin_info_msg": {
-        "ru": "Вы назначены администратором данного бота.\nТеперь вы можете создавать и управлять аукционами, назначать администраторов",
-        "en": "You have been appointed as an administrator of this bot.\nYou can now create and manage auctions, and assign other administrators"
+        "ru": "Вы назначены администратором данного бота.\nТеперь вы можете создавать и управлять аукционами, назначать администраторов.\nЧтобы перейти в панель управления, напишите /menu",
+        "en": "You have been appointed as an administrator of this bot.\nYou can now create and manage auctions, and assign other administrators.\nTo go to the control panel, write /menu"
     },
     "admin_menu_action_msg": {
         "ru": "Выберите желаемое действие:",
@@ -112,8 +112,8 @@
         "en": "Specify the type of drink"
     },
     "admin_menu_create_volume_msg": {
-        "ru": "Укажите объём напитка (только значение - число) или напишите SKIP, если не хотите указывать",
-        "en": "Specify the volume of the drink (only the value is a number) or write SKIP if you do not want to specify it"
+        "ru": "Укажите объём напитка в литрах (только значение - число) или напишите SKIP, если не хотите указывать",
+        "en": "Specify the volume of the drink in litres (only the value is a number) or write SKIP if you do not want to specify it"
     },
     "admin_menu_create_abv_msg": {
         "ru": "Укажите крепость напитка (только значение - число) или напишите SKIP, если не хотите указывать",
