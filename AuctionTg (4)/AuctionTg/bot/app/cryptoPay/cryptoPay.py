@@ -8,7 +8,7 @@ class Crypto:
     def __init__(self) -> None:
         conf = config.Config()
         self.config = conf
-        self.Crypto = cryptopay.Crypto(conf.get_value('CRYPTO_PAY_TOKEN'), testnet = True) #default testnet = False
+        self.Crypto = cryptopay.Crypto(conf.get_value('CRYPTO_PAY_TOKEN'), testnet = False)
 
     def __new__(cls):
         if not hasattr(cls, 'instance'):
@@ -31,7 +31,7 @@ class Crypto:
         invioce = self.Crypto.createInvoice(
             asset=coin, 
             amount=price, 
-            params={"description": "Test Invoice", "expires_in": self.config.get_value('PAY_EXPARATION')}
+            params={"description": "Invoice", "expires_in": self.config.get_value('PAY_EXPARATION')}
         )
         if invioce['ok'] == True:
             result: dict = invioce['result']
