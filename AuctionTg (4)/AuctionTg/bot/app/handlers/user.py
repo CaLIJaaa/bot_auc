@@ -15,15 +15,12 @@ from app.DB.DB import User, Auction, Bid
 from app.helper.config import Config
 import os
 from app.cryptoPay import cryptoPay
-import _thread
 
 router = Router()
 crypto = cryptoPay.Crypto()
 
 class get_lang(StatesGroup):
     lang_add = State()
-
-_thread.start_new_thread(crypto.checkInvoices, ())
 
 STATIC_PATH = os.path.join(os.path.dirname(__file__), '../static/')
 

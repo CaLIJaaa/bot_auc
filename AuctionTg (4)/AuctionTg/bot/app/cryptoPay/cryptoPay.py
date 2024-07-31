@@ -50,19 +50,17 @@ class Crypto:
         if invioce['ok'] == True:
             return invioce['result']
         
-    def checkInvoices(self):
-        while True:
-            auctions = Auction.get_auction_by_status_pay()
-            items = self.getInvoices()['items']
+    async def checkInvoices(self):
+        auctions = Auction.get_auction_by_status_pay()
+        items = self.getInvoices()['items']
 
-            if len(items) == 0 or len(auctions) == 0:
-                return
-            
-            for auction in auctions:
-                if 'invoice_id' in auction:
-                    for item in items:
-                        if item['invoice_id'] == auction['invoice_id']:
-                            if item['status'] == 'paid' and auction['statusPay'] == 'active':
-                                Auction.update_auction(auction['id'], 'statusPay', 'paid')
+        if len(items) == 0 or len(auctions) == 0:
+            return
+        
+        for auction in auctions:
+            if 'invoice_id' in auction:
+                for item in items:
+                    if item['invoice_id'] == auction['invoice_id']:
+                        if item['status'] == 'paid' and auction['statusPay'] == 'active':
+                            Auction.update_auction(auction['id'], 'statusPay', 'paid')
 
-            sleep(30)

@@ -17,10 +17,12 @@ import app.messages.for_admin as msg_adm
 from app.DB.DB import User, Auction, Bid
 import pymysql.cursors
 from app.helper.config import Config
+from app.cryptoPay import cryptoPay
 import time
 
 conf = Config()
 router = Router()
+crypto = cryptoPay.Crypto()
 
 class AuctionControllerDB():
     def _get_connection_cursor():
@@ -154,6 +156,8 @@ def controller(bot, loop):
         paidAuctions = AuctionControllerDB.get_paid_auctions()
         expired = AuctionControllerDB.expired_auction()
 
+        between_callback_checkInvoice(loop=loop)
+
         if len(expired) > 0:
             between_callback_expired(expired, bot, loop=loop)
 
@@ -184,6 +188,14 @@ def between_callback_expired(*args, loop):
 
     send_fut = asyncio.run_coroutine_threadsafe(send_expired(*args), loop)
     send_fut.result()
+
+def between_callback_checkInvoice(*args, loop):
+    asyncio.set_event_loop(loop)
+
+    send_fut = asyncio.run_coroutine_threadsafe(crypto.checkInvoices(), loop)
+    send_fut.result()
+
+    time.sleep(20)
 
 async def send_notification(auction, bot):
     if conf.get_value('LOOSE_NOTIFICATION'):
