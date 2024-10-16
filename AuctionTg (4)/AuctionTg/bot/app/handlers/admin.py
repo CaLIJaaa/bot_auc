@@ -153,7 +153,10 @@ async def abv_set_(message: Message, state: FSMContext):
 async def country_set_(message: Message, state: FSMContext):
     try:
         if User.is_user_admin(message.from_user.id):
-            await state.update_data(country=message.text[:100])
+            country_ru, country_en = message.text.split('///')
+            print(country_en, country_ru)
+            await state.update_data(country_ru=country_ru.strip()[:100])
+            await state.update_data(country_en=country_en.strip()[:100])
             await message.answer(
                 text=msg.brand_set_msg(message.from_user.id),
                 reply_markup=kb_adm.get_skip_auction_creation_kb(message.from_user.id, 'brand')
@@ -192,7 +195,9 @@ async def produser_set_(message: Message, state: FSMContext):
 async def description_set_(message: Message, state: FSMContext):
     try:
         if User.is_user_admin(message.from_user.id):
-            await state.update_data(description=message.text[:200])
+            description_ru, description_en = message.text.split('///')
+            await state.update_data(description_ru=description_ru.strip()[:500])
+            await state.update_data(description_en=description_en.strip()[:500])
             await message.answer(
                 text=msg.price_set_msg(message.from_user.id)
             )
@@ -269,7 +274,8 @@ async def type_set_(query: CallbackQuery, state: FSMContext, callback_data: cbd.
                         reply_markup=kb_adm.get_skip_auction_creation_kb(query.from_user.id, 'country')
                     )
                 case 'country':
-                    await state.update_data({callback_data.value: None})
+                    await state.update_data({'country_ru': None})
+                    await state.update_data({'country_en': None})
                     await state.set_state(CreateNewAuction.brand_set)
                     await query.message.answer(
                         text=msg.brand_set_msg(query.from_user.id),
@@ -290,7 +296,8 @@ async def type_set_(query: CallbackQuery, state: FSMContext, callback_data: cbd.
                         reply_markup=kb_adm.get_skip_auction_creation_kb(query.from_user.id, 'description')
                     )
                 case 'description':
-                    await state.update_data({callback_data.value: None})
+                    await state.update_data({'description_ru': None})
+                    await state.update_data({'description_en': None})
                     await state.set_state(CreateNewAuction.price_set)
                     await query.message.answer(
                         text=msg.price_set_msg(query.from_user.id)

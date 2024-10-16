@@ -48,15 +48,15 @@ def msg_auction(tg_id: int, auction_id: str) -> str:
     last_price = auction['money'] if auction['money'] else auction['price']
     userLang = User.get_user_by_tg_id(tg_id)[0]['lang']
     msg = (get_msg_lang('lot_msg', tg_id) % (auction['name'], 
-                                             auction['type'], 
-                                             f'{auction['volume']} л' if userLang == 'ru' else f'{auction['volume'] * 100} cl', 
-                                             f'{auction['abv']}%', 
-                                             auction['country'], 
-                                             auction['brand'], 
-                                             auction['produser'], 
-                                             auction['description'],
-                                             last_price, 
-                                             conf.get_value('CURRENCY')))
+                                            auction['type'], 
+                                            f'{auction['volume']} л' if userLang == 'ru' else f'{auction['volume'] * 100} cl' if auction['volume'] else 0, 
+                                            f'{auction['abv']}%', 
+                                            auction['country_ru'] if userLang == 'ru' else auction['country_en'], 
+                                            auction['brand'], 
+                                            auction['produser'], 
+                                            auction['description_ru'] if userLang == 'ru' else auction['description_en'],
+                                            last_price, 
+                                            conf.get_value('CURRENCY')))
     if user_bid != '-':
         msg += (get_msg_lang('lot_your_bid_msg', tg_id) % (user_bid, 
                                                 conf.get_value('CURRENCY')))

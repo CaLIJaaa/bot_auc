@@ -48,6 +48,14 @@ class User():
         conn, cursor = User._get_connection_cursor()
         cursor.execute("SELECT * FROM `user` WHERE `status`!= %s;", ('banned', ))
         return cursor.fetchall()
+    
+    def get_users_tg_id():
+        '''
+        Возвращает всех из таблицы `user` 
+        '''
+        conn, cursor = User._get_connection_cursor()
+        cursor.execute("SELECT id, tg_id FROM `user` WHERE `status`!= %s;", ('banned', ))
+        return cursor.fetchall()
 
     def get_user_by_tg_id(tg_id):
         '''
@@ -238,7 +246,7 @@ class Auction():
         """
         try:
             conn, cursor = Auction._get_connection_cursor()
-            cursor.execute("update auction a set status = 'opened', time_start = CURRENT_TIMESTAMP() \
+            cursor.execute("update auction a set status = 'opened', time_start = CURRENT_TIMESTAMP(), time_update = CURRENT_TIMESTAMP() \
                             where a.id = %s and \
                             (select COUNT(*) FROM (SELECT * FROM auction) AS B  WHERE B.type = (SELECT type FROM (SELECT * FROM auction) as C WHERE id = %s) AND B.status = %s) < 5", 
                             (str(auction_id), str(auction_id), 'opened'))
@@ -257,39 +265,44 @@ class Auction():
                        type: str,
                        volume: float,
                        abv: float,
-                       country: str,
+                       country_ru: str,
+                       country_en: str,
                        brand: str,
                        produser: str,
-                       description: str,
+                       description_ru: str,
+                       description_en: str,
                        price: float,
                        time_leinght
     ) -> int:
         auction_id = None
         try:
+            print(country_en, country_ru, description_en, description_ru)
             user = User.get_user_by_tg_id(created_by)
             created_by = user[0]['id'] if len(user)!= 0 else 0
             conn, cursor = Auction._get_connection_cursor()
             cursor.execute("INSERT INTO `auction` (`created_by`, `picture`, `name`, \
-                           `type`, `volume`, `abv`, `country`, `brand`, `produser`, \
-                           `description`, `price`, `time_leinght`, `status`) \
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);",
+                           `type`, `volume`, `abv`, `country_ru`, `country_en`, `brand`, `produser`, \
+                           `description_ru`, `description_en`, `price`, `time_leinght`, `status`) \
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);",
                             (created_by,
                              picture,
                              name,
                              type,
                              volume,
                              abv,
-                             country,
+                             country_ru,
+                             country_en,
                              brand,
                              produser,
-                             description,
+                             description_ru,
+                             description_en,
                              price,
                              time_leinght,
                              'created'))
             conn.commit()
             auction_id = cursor.lastrowid
-        except BaseException:
-            pass
+        except BaseException as e:
+            print(e)
         finally:
             cursor.close()
             conn.close()

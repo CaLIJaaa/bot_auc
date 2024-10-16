@@ -58,16 +58,8 @@ def get_pay_way_kb(auction_id: int, user_id: int, amount: int) -> ReplyKeyboardM
         callback_data=cbd.TypePayCallback(pay_type='USDT', auction_id=auction_id, user_id=user_id, amount=amount)
     )
     keyboard.button(
-        text = "ETH",
-        callback_data=cbd.TypePayCallback(pay_type='ETH', auction_id=auction_id, user_id=user_id, amount=amount)
-    )
-    keyboard.button(
-        text = "TON",
-        callback_data=cbd.TypePayCallback(pay_type='TON', auction_id=auction_id, user_id=user_id, amount=amount)
-    )
-    keyboard.button(
-        text = "BITCOIN",
-        callback_data=cbd.TypePayCallback(pay_type='BTC', auction_id=auction_id, user_id=user_id, amount=amount)
+        text = "USDC",
+        callback_data=cbd.TypePayCallback(pay_type='USDC', auction_id=auction_id, user_id=user_id, amount=amount)
     )
     keyboard.adjust(1)
     return keyboard.as_markup()

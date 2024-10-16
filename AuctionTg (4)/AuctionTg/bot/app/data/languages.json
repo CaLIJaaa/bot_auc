@@ -120,8 +120,8 @@
         "en": "Specify the alcohol content (ABV) (only the value is a number) or write SKIP if you don't want to specify"
     },
     "admin_menu_create_country_msg": {
-        "ru": "Укажите страну напитка или напишите SKIP, если не хотите указывать",
-        "en": "Specify the country of origin or write SKIP if you don't want to specify"
+        "ru": "Укажите страну напитка вида 'country in russian /// country in english' или напишите SKIP, если не хотите указывать",
+        "en": "Specify the country of origin like 'country in russian /// country in english' or write SKIP if you don't want to specify"
     },
     "admin_menu_create_brand_msg": {
         "ru": "Укажите бренд напитка или напишите SKIP, если не хотите указывать",
@@ -132,8 +132,8 @@
         "en": "Specify the manufacturer or write SKIP if you don't want to specify"
     },
     "admin_menu_create_description_msg": {
-        "ru": "Укажите описание напитка или напишите SKIP, если не хотите указывать",
-        "en": "Provide a description of the drink or write SKIP if you don't want to specify"
+        "ru": "Укажите описание напитка вида 'desc in russian /// desc in english' или напишите SKIP, если не хотите указывать",
+        "en": "Provide a description of the drink like 'desc in russian /// desc in english' or write SKIP if you don't want to specify"
     },
     "admin_menu_create_start_price_msg": {
         "ru": "Отправь мне стартовую цену, например '10'",

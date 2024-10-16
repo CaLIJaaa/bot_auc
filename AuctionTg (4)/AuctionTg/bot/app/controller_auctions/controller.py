@@ -19,10 +19,13 @@ import pymysql.cursors
 from app.helper.config import Config
 from app.cryptoPay import cryptoPay
 import time
+import os
 
 conf = Config()
 router = Router()
 crypto = cryptoPay.Crypto()
+
+STATIC_PATH = os.path.join(os.path.dirname(__file__), '../static/')
 
 class AuctionControllerDB():
     def _get_connection_cursor():
@@ -41,6 +44,36 @@ class AuctionControllerDB():
         conn, cursor = AuctionControllerDB._get_connection_cursor()
         cursor.execute("SELECT MIN(TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP(), TIMESTAMPADD(SECOND, TIME_TO_SEC(time_leinght), time_start))) AS `result` FROM `auction` WHERE `status`='opened';")
         return cursor.fetchall()[0]['result']
+    
+    def get_auction_by_update_date():
+        """
+        Возвращает значения из `auction`
+        """
+        auctions = []
+        try:
+            conn, cursor = AuctionControllerDB._get_connection_cursor()
+            cursor.execute("SELECT * FROM auction WHERE time_update < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL %s MINUTE) AND status = 'opened';", (conf.get_value('UPDATE_INTERVAL')))
+            auctions = cursor.fetchall()
+        except BaseException:
+            pass
+        finally:
+            cursor.close()
+            conn.close()
+        return auctions
+    
+    def update_auction_update_date(id: int):
+        """
+        
+        """
+        try:
+            conn, cursor = AuctionControllerDB._get_connection_cursor()
+            cursor.execute("UPDATE auction SET time_update = CURRENT_TIMESTAMP() WHERE id = %s;", (id))
+            conn.commit()
+        except BaseException:
+            pass
+        finally:
+            cursor.close()
+            conn.close()
     
     def close_auction():
         """
@@ -155,6 +188,7 @@ def controller(bot, loop):
         auctions = AuctionControllerDB.close_auction()
         paidAuctions = AuctionControllerDB.get_paid_auctions()
         expired = AuctionControllerDB.expired_auction()
+        update_auctions = AuctionControllerDB.get_auction_by_update_date()
 
         between_callback_checkInvoice(loop=loop)
 
@@ -163,6 +197,9 @@ def controller(bot, loop):
 
         if len(paidAuctions) > 0:
             between_callback_paid(paidAuctions, bot, loop=loop)
+
+        if len(update_auctions) > 0:
+            between_callback_update(update_auctions, bot, loop=loop)
 
         if len(auctions) > 0:    
             between_callback(auctions, bot, loop=loop)
@@ -181,6 +218,12 @@ def between_callback_paid(*args, loop):
     asyncio.set_event_loop(loop)
 
     send_fut = asyncio.run_coroutine_threadsafe(send_paid(*args), loop)
+    send_fut.result()
+
+def between_callback_update(*args, loop):
+    asyncio.set_event_loop(loop)
+
+    send_fut = asyncio.run_coroutine_threadsafe(update_auctions(*args), loop)
     send_fut.result()
 
 def between_callback_expired(*args, loop):
@@ -248,6 +291,35 @@ async def send_paid(auction, bot):
         Auction.update_auction(auction[0]['id'], 'statusPay', 'closed')
     except BaseException:
         pass
+
+async def update_auctions(auctions, bot):
+    users = User.get_users_tg_id()
+    
+    for user in users:
+        try:
+            for auction in auctions:
+                if auction['picture'] == None: # Аукцион без фото
+
+                    await bot.send_message(chat_id=user['tg_id'],
+                        text=msg.msg_auction(user['tg_id'], auction['id']),
+                        reply_markup=kb_usr.get_auction_detail_kb(user['tg_id'], auction['id'])
+                    )
+                    AuctionControllerDB.update_auction_update_date(auction['id'])
+
+                elif auction['picture'] != None: # Аукцион с фото
+
+                    photo = FSInputFile(
+                        os.path.join(STATIC_PATH, 
+                                    auction['picture'])
+                    )
+                    await bot.send_photo(chat_id=user['tg_id'],
+                        photo=photo,
+                        caption=msg.msg_auction(user['tg_id'], auction['id']),
+                        reply_markup=kb_usr.get_auction_detail_kb(user['tg_id'], auction['id'])
+                    )
+                    AuctionControllerDB.update_auction_update_date(auction['id'])
+        except BaseException:
+            pass
 
 async def send_expired(auction, bot):
     winner, money = AuctionControllerDB.get_winner_by_auction_id(auction[0]['id'])
