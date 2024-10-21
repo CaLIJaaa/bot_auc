@@ -1,7 +1,7 @@
 from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.filters.callback_data import CallbackData, CallbackQuery
-from aiogram.types import Message, ReplyKeyboardRemove, FSInputFile
+from aiogram.types import Message, ReplyKeyboardRemove, FSInputFile, InputMediaPhoto
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -14,7 +14,7 @@ import app.keyboards.for_user as kb_usr
 import app.callbackdata.custom as cbd
 import app.messages.for_user as msg
 import app.messages.for_admin as msg_adm
-from app.DB.DB import User, Auction, Bid
+from app.DB.DB import User, Auction, Bid, Messages
 import pymysql.cursors
 from app.helper.config import Config
 from app.cryptoPay import cryptoPay
@@ -68,6 +68,17 @@ class AuctionControllerDB():
         try:
             conn, cursor = AuctionControllerDB._get_connection_cursor()
             cursor.execute("UPDATE auction SET time_update = CURRENT_TIMESTAMP() WHERE id = %s;", (id))
+            conn.commit()
+        except BaseException:
+            pass
+        finally:
+            cursor.close()
+            conn.close()
+
+    def update_auction_last_message(id: int, message_id: int):
+        try:
+            conn, cursor = AuctionControllerDB._get_connection_cursor()
+            cursor.execute("UPDATE auction SET last_message_id = %s WHERE id = %s;", (message_id, id))
             conn.commit()
         except BaseException:
             pass
@@ -293,31 +304,41 @@ async def send_paid(auction, bot):
         pass
 
 async def update_auctions(auctions, bot):
-    users = User.get_users_tg_id()
+    messages = Messages.get_message_by_auction(auctions[0]['id'])
+    print(messages)
     
-    for user in users:
+    if len(messages) == 0:
+        return
+    
+    for message in messages:
         try:
-            for auction in auctions:
-                if auction['picture'] == None: # Аукцион без фото
+            if auctions[0]['picture'] == None: # Аукцион без фото
 
-                    await bot.send_message(chat_id=user['tg_id'],
-                        text=msg.msg_auction(user['tg_id'], auction['id']),
-                        reply_markup=kb_usr.get_auction_detail_kb(user['tg_id'], auction['id'])
-                    )
-                    AuctionControllerDB.update_auction_update_date(auction['id'])
+                newMess = msg.msg_auction(message['user_id'], auctions[0]['id'])
+                media = InputMediaPhoto(media=photo, caption=newMess)
+                await bot.edit_message_media(
+                    chat_id=message['user_id'],
+                    message_id=message['message_id'],
+                    media=media,
+                    reply_markup=kb_usr.get_auction_detail_kb(message['user_id'], auctions[0]['id'])
+                )
+                AuctionControllerDB.update_auction_update_date(auctions[0]['id'])
 
-                elif auction['picture'] != None: # Аукцион с фото
+            elif auctions[0]['picture'] != None: # Аукцион с фото
 
-                    photo = FSInputFile(
-                        os.path.join(STATIC_PATH, 
-                                    auction['picture'])
-                    )
-                    await bot.send_photo(chat_id=user['tg_id'],
-                        photo=photo,
-                        caption=msg.msg_auction(user['tg_id'], auction['id']),
-                        reply_markup=kb_usr.get_auction_detail_kb(user['tg_id'], auction['id'])
-                    )
-                    AuctionControllerDB.update_auction_update_date(auction['id'])
+                photo = FSInputFile(
+                    os.path.join(STATIC_PATH, 
+                                auctions[0]['picture'])
+                )
+                newMess = msg.msg_auction(message['user_id'], auctions[0]['id'])
+                media = InputMediaPhoto(media=photo, caption=newMess)
+                await bot.edit_message_media(
+                    chat_id=message['user_id'],
+                    message_id=message['message_id'],
+                    media=media,
+                    reply_markup=kb_usr.get_auction_detail_kb(message['user_id'], auctions[0]['id'])
+                )
+                AuctionControllerDB.update_auction_update_date(auctions[0]['id'])
         except BaseException:
             pass
 

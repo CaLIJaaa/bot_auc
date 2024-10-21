@@ -11,7 +11,7 @@ import app.keyboards.for_admin as kb_adm
 import app.callbackdata.custom as cbd
 import app.messages.for_user as msg
 import app.messages.for_admin as msg_adm
-from app.DB.DB import User, Auction, Bid
+from app.DB.DB import User, Auction, Bid, Messages
 from app.helper.config import Config
 import os
 from app.cryptoPay import cryptoPay
@@ -111,10 +111,15 @@ async def answer_auction_detail(query: CallbackQuery, callback_data: cbd.Auction
         if len(Auction.get_opened_auction_by_id(callback_data.auction_id)) != 0 and \
             Auction.get_auction_by_id(callback_data.auction_id)[0]['picture'] == None: # Аукцион без фото
 
-            await query.message.edit_text(
+            message = await query.message.edit_text(
                 text=msg.msg_auction(query.from_user.id, callback_data.auction_id),
                 reply_markup=kb_usr.get_auction_detail_kb(query.from_user.id, callback_data.auction_id)
             )
+            user_message = Messages.get_message_by_auction_and_user(callback_data.auction_id, query.from_user.id)
+            if not(user_message):
+                Messages.add_message(callback_data.auction_id, query.from_user.id, message.message_id)
+            else:
+                Messages.update_message(callback_data.auction_id, query.from_user.id, message.message_id)
         elif len(Auction.get_opened_auction_by_id(callback_data.auction_id)) != 0 and \
             Auction.get_auction_by_id(callback_data.auction_id)[0]['picture'] != None: # Аукцион с фото
 
@@ -123,11 +128,17 @@ async def answer_auction_detail(query: CallbackQuery, callback_data: cbd.Auction
                              Auction.get_auction_by_id(callback_data.auction_id)[0]['picture'])
             )
             await query.message.delete()
-            await query.message.answer_photo(
+            message = await query.message.answer_photo(
                 photo=photo,
                 caption=msg.msg_auction(query.from_user.id, callback_data.auction_id),
                 reply_markup=kb_usr.get_auction_detail_kb(query.from_user.id, callback_data.auction_id)
             )
+            print(message.message_id)
+            user_message = Messages.get_message_by_auction_and_user(callback_data.auction_id, query.from_user.id)
+            if not(user_message):
+                Messages.add_message(callback_data.auction_id, query.from_user.id, message.message_id)
+            else:
+                Messages.update_message(callback_data.auction_id, query.from_user.id, message.message_id)
         else: # Аукцион уже не активен
             await query.message.edit_text(
                 text=msg.menu_msg(query.from_user.id),
@@ -149,10 +160,11 @@ async def answer_add_bill(query: CallbackQuery, callback_data: cbd.BidMenuCallba
             if len(Auction.get_auction_by_id(callback_data.auction_id)) != 0 and \
                 Auction.get_auction_by_id(callback_data.auction_id)[0]['picture'] == None: # Аукцион без фото
 
-                await query.message.edit_text(
+                message = await query.message.edit_text(
                     text=msg.msg_auction(query.from_user.id, callback_data.auction_id),
                     reply_markup=kb_usr.get_auction_detail_kb(query.from_user.id, callback_data.auction_id)
                 )
+                Messages.update_message(callback_data.auction_id, query.from_user.id, message.message_id)
             elif len(Auction.get_auction_by_id(callback_data.auction_id)) != 0 and \
                 Auction.get_auction_by_id(callback_data.auction_id)[0]['picture'] != None: # Аукцион с фото
 
@@ -161,11 +173,12 @@ async def answer_add_bill(query: CallbackQuery, callback_data: cbd.BidMenuCallba
                                  Auction.get_auction_by_id(callback_data.auction_id)[0]['picture'])
                 )
                 await query.message.delete()
-                await query.message.answer_photo(
+                message = await query.message.answer_photo(
                     photo=photo,
                     caption=msg.msg_auction(query.from_user.id, callback_data.auction_id),
                     reply_markup=kb_usr.get_auction_detail_kb(query.from_user.id, callback_data.auction_id)
                 )
+                Messages.update_message(callback_data.auction_id, query.from_user.id, message.message_id)
             else: # Аукцион уже не активен
                 await query.message.edit_text(
                     text=msg.menu_msg(query.from_user.id),

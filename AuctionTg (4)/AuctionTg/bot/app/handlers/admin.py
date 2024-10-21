@@ -14,7 +14,7 @@ import app.keyboards.for_admin as kb_adm
 import app.callbackdata.custom as cbd
 import app.messages.for_user as msg_user
 import app.messages.for_admin as msg
-from app.DB.DB import User, Auction, Bid
+from app.DB.DB import User, Auction, Bid, Messages
 from app.helper.config import Config
 
 router = Router()
@@ -233,8 +233,7 @@ async def time_leinght_set_(message: Message, state: FSMContext):
 
             if Auction.get_auction_by_id(id)[0]['picture'] == None: # Аукцион без фото
 
-
-                await message.answer(
+                messId = await message.answer(
                     text=msg.msg_auction(message.from_user.id, id),
                     reply_markup=kb_adm.get_actions_admin_kb(message.from_user.id, id)
                 )
@@ -244,8 +243,7 @@ async def time_leinght_set_(message: Message, state: FSMContext):
                     os.path.join(STATIC_PATH, 
                                  Auction.get_auction_by_id(id)[0]['picture'])
                 )
-
-                await message.answer_photo(
+                messId = await message.answer_photo(
                     photo=photo,
                     caption=msg.msg_auction(message.from_user.id, id),
                     reply_markup=kb_adm.get_actions_admin_kb(message.from_user.id, id)
@@ -416,12 +414,13 @@ async def delete_auction(query: CallbackQuery, callback_data: cbd.AuctionSetting
                         os.path.join(STATIC_PATH, 
                                      Auction.get_auction_by_id(callback_data.auction_id)[0]['picture'])
                     )
-                    await query.bot.send_photo(
+                    message = await query.bot.send_photo(
                         chat_id=user['tg_id'],
                         photo=photo,
                         caption=msg_user.msg_auction(query.from_user.id, callback_data.auction_id),
                         reply_markup=kb_usr.get_auction_detail_kb(query.from_user.id, callback_data.auction_id)
                     )
+                    Messages.add_message(callback_data.auction_id, user['tg_id'], message.message_id)
     except BaseException:
         await query.answer(
                 text='Error'

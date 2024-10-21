@@ -276,7 +276,6 @@ class Auction():
     ) -> int:
         auction_id = None
         try:
-            print(country_en, country_ru, description_en, description_ru)
             user = User.get_user_by_tg_id(created_by)
             created_by = user[0]['id'] if len(user)!= 0 else 0
             conn, cursor = Auction._get_connection_cursor()
@@ -327,6 +326,8 @@ class Auction():
                     to_update = 'time_leinght'
                 case 'statusPay':
                     to_update = 'statusPay'
+                case 'last_message_id':
+                    to_update = 'last_message_id'
                 case _:
                     return
             cursor.execute("UPDATE `auction` SET `" + to_update + "` = %s WHERE `id` = %s;",
@@ -484,4 +485,56 @@ class Bid():
         """
         conn, cursor = Bid._get_connection_cursor()
         cursor.execute("SELECT * FROM `bid` WHERE `user_id` = (SELECT `id` FROM `user` WHERE `tg_id` = %s) AND `auction_id` = %s ORDER BY `money` DESC;", (str(tg_id), str(auction_id)))
+        return cursor.fetchall()
+    
+class Messages:
+    def _get_connection_cursor():
+        conn = pymysql.connect(host=conf.get_value('HOST'),
+                             user=conf.get_value('USER'),
+                             password=conf.get_value('PASSWORD'),
+                             database=conf.get_value('DATABASE'),
+                             cursorclass=pymysql.cursors.DictCursor)
+        cursor = conn.cursor()
+        return conn, cursor
+    
+    def add_message(auction_id: int, tg_id: int, message_id: int):
+        """
+        Добавляет new message в таблицу `auction_messages`
+        """
+        conn, cursor = Bid._get_connection_cursor()
+        try:
+            cursor.execute("INSERT INTO `auction_messages` (`auction_id`, `user_id`, `message_id`) VALUES (%s, %s, %s);",
+                        (str(auction_id), str(tg_id), str(message_id)))
+            conn.commit()
+            done = True
+        except BaseException:
+            done = False
+        finally:
+            cursor.close()
+            conn.close()
+        return done
+    
+    def get_message_by_auction(auction_id: int):
+        """
+        return by `auc_id`
+        """
+        conn, cursor = Bid._get_connection_cursor()
+        cursor.execute("SELECT * FROM `auction_messages` WHERE `auction_id` = %s;", (str(auction_id), ))
+        return cursor.fetchall()
+    
+    def get_message_by_auction_and_user(auction_id: int, user_id: int):
+        """
+        return by `auc_id and user_id`
+        """
+        conn, cursor = Bid._get_connection_cursor()
+        cursor.execute("SELECT * FROM `auction_messages` WHERE `auction_id` = %s AND `user_id` = %s;", (str(auction_id), str(user_id)))
+        return cursor.fetchall()
+    
+    def update_message(auction_id: int, user_id: int, message_id: int):
+        """
+        return by `auc_id and user_id`
+        """
+        conn, cursor = Bid._get_connection_cursor()
+        cursor.execute("UPDATE `auction_messages` SET `message_id` = %s WHERE `auction_id` = %s AND `user_id` = %s;", (str(message_id), str(auction_id), str(user_id)))
+        conn.commit()
         return cursor.fetchall()

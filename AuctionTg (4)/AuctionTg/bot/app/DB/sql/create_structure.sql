@@ -54,3 +54,14 @@ CREATE TABLE IF NOT EXISTS `bid` (
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `auction_messages` (
+	id BIGINT auto_increment NOT NULL,
+	user_id BIGINT NOT NULL,
+	auction_id BIGINT NOT NULL,
+	message_id BIGINT NOT NULL,
+	primary key (id)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
