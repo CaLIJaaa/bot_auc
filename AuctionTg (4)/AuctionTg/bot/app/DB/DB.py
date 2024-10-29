@@ -77,6 +77,7 @@ class User():
             tg_id: int,
             tg_link: str,
             lang: str,
+            carency: str,
             status: str = 'user'
     ) -> None:
         '''
@@ -84,8 +85,8 @@ class User():
         '''
         conn, cursor = User._get_connection_cursor()
         try:
-            cursor.execute("INSERT INTO `user` (`tg_id`, `tg_link`, `lang`, `status`) VALUES (%s, %s, %s, %s);",
-                        (tg_id, tg_link, lang, status))
+            cursor.execute("INSERT INTO `user` (`tg_id`, `tg_link`, `lang`, `carency`, `status`) VALUES (%s, %s, %s, %s, %s);",
+                        (tg_id, tg_link, lang, carency, status))
         except BaseException:
             pass
         finally:
@@ -354,7 +355,7 @@ class Auction():
             conn, cursor = Auction._get_connection_cursor()
 
             cursor.execute(
-                "UPDATE `auction` SET `invoice_id` = %s, `asset` = %s, `amount` = %s, `payment_url` = %s WHERE `id` = %s;",
+                "UPDATE `bank` SET `invoice_id` = %s, `asset` = %s, `amount` = %s, `payment_url` = %s, time_invoice = CURRENT_TIMESTAMP() WHERE `id` = %s;",
                 (invoice_id, asset, amount, payment_url, auction_id)
             )
             conn.commit()
@@ -430,8 +431,8 @@ class Bid():
             results = cursor.fetchall()
             if len(results) > 0 and results[0]['result'] != 0:
                 cursor.execute("INSERT INTO `bid` (`auction_id`, `user_id`, `money`, `time_bid`) VALUES (%s, (SELECT `id` FROM `user` WHERE `tg_id` = %s), \
-                                IFNULL((SELECT MAX(money ) FROM (SELECT * FROM `bid`) as b WHERE b.auction_id = %s), (SELECT a.price FROM auction a WHERE a.id=%s))+%s, CURRENT_TIMESTAMP());",
-                            (str(auction_id), str(tg_id), str(auction_id), str(auction_id), money))
+                                %s, CURRENT_TIMESTAMP());",
+                            (str(auction_id), str(tg_id), money))
                 cursor.execute("SELECT TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP(), TIMESTAMPADD(SECOND, TIME_TO_SEC(time_leinght), time_start)) as `result` FROM `auction` WHERE `id` = %s;", (str(auction_id), ))
                 try:
                     time = cursor.fetchall()[0]['result']
@@ -453,8 +454,16 @@ class Bid():
         Возвращает все ставки по `auction_id`
         """
         conn, cursor = Bid._get_connection_cursor()
-        cursor.execute("SELECT a.id, `money`, `tg_link` FROM `bid` a LEFT JOIN `user` b ON a.user_id = b.id WHERE `auction_id` = %s;", (str(auction_id), ))
+        cursor.execute("SELECT a.id, `money`, `tg_link` FROM `bid` a LEFT JOIN `user` b ON a.user_id = b.id WHERE `auction_id` = %s ORDER BY money ASC;", (str(auction_id), ))
         return cursor.fetchall()
+    
+    def get_max_bid_by_auction_id(auction_id: int):
+        """
+        Возвращает все ставки по `auction_id`
+        """
+        conn, cursor = Bid._get_connection_cursor()
+        cursor.execute("SELECT * FROM bid WHERE money = (select max(money) from bid) AND auction_id = %s;", (str(auction_id), ))
+        return cursor.fetchone()
     
     def get_bid_by_id(bid_id: int):
         """
@@ -479,6 +488,21 @@ class Bid():
             conn.close()
         return
     
+    def delete_bid_by_user_and_auction(user_id: int, auction_id: int):
+        """
+        Удаляет ставку по `id`
+        """
+        try:
+            conn, cursor = Bid._get_connection_cursor()
+            cursor.execute("DELETE FROM `bid` WHERE `user_id` = (SELECT `id` FROM `user` WHERE `tg_id` = %s) AND `auction_id` = %s;", (str(user_id), str(auction_id)))
+            conn.commit()
+        except BaseException:
+            pass
+        finally:
+            cursor.close()
+            conn.close()
+        return
+    
     def get_bid_by_tg_id(tg_id: int, auction_id: int):
         """
         Возвращает ставку по `tg_id` пользователя
@@ -487,6 +511,187 @@ class Bid():
         cursor.execute("SELECT * FROM `bid` WHERE `user_id` = (SELECT `id` FROM `user` WHERE `tg_id` = %s) AND `auction_id` = %s ORDER BY `money` DESC;", (str(tg_id), str(auction_id)))
         return cursor.fetchall()
     
+    def update_bid_by_tg_id(tg_id: int, auction_id: int, money: int):
+        conn, cursor = Bid._get_connection_cursor()
+        done = False
+        try:
+            cursor.execute("UPDATE `bid` SET money = %s WHERE `user_id` = (SELECT `id` FROM `user` WHERE `tg_id` = %s) AND `auction_id` = %s;", (str(money), str(tg_id), str(auction_id)))
+            conn.commit()
+            done = True
+        except BaseException as e:
+            done = False
+        finally:
+            cursor.close()
+            conn.close()
+        return done
+    
+        
+    
+class Bank:
+    def _get_connection_cursor():
+        conn = pymysql.connect(host=conf.get_value('HOST'),
+                             user=conf.get_value('USER'),
+                             password=conf.get_value('PASSWORD'),
+                             database=conf.get_value('DATABASE'),
+                             cursorclass=pymysql.cursors.DictCursor)
+        cursor = conn.cursor()
+        return conn, cursor
+    
+    def create_bank(auction_id: int, tg_id: int):
+        """
+        Добавляет новую ставку в таблицу `bid`
+        """
+        conn, cursor = Bank._get_connection_cursor()
+        try:
+            cursor.execute("SELECT TIMESTAMPADD(SECOND, TIME_TO_SEC(time_leinght), time_start) > NOW() as `result` FROM `auction` WHERE `id` = %s;", (str(auction_id), ))
+            results = cursor.fetchall()
+            if len(results) > 0 and results[0]['result'] != 0:
+                cursor.execute("INSERT INTO `bank` (`auction_id`, `user_id`) VALUES (%s, %s);", (auction_id, tg_id))
+                conn.commit()
+                done = True
+        except BaseException:
+            done = False
+        finally:
+            cursor.close()
+            conn.close()
+        return done
+    
+    def get_bank_by_auction(auction_id: int):
+        """
+        return by `auc_id`
+        """
+        conn, cursor = Bank._get_connection_cursor()
+        cursor.execute("SELECT * FROM `bank` WHERE `auction_id` = %s;", (auction_id, ))
+        return cursor.fetchall()
+    
+    def get_bank_by_auction_and_user(auction_id: int, user_id: int):
+        """
+        return by `auc_id and user_id`
+        """
+        conn, cursor = Bank._get_connection_cursor()
+        cursor.execute("SELECT * FROM `bank` WHERE `auction_id` = %s AND `user_id` = %s;", (auction_id, user_id))
+        return cursor.fetchall()
+    
+    def get_bank_by_status_pay():
+        """
+        Возвращает значения из `auction` по `tg_id` пользователя
+        """
+        conn, cursor = Auction._get_connection_cursor()
+        cursor.execute("SELECT * FROM `bank` WHERE `statusPay` = %s;", ('active', ))
+        return cursor.fetchall()
+    
+    def get_paid_banks():
+            """
+            Возвращает оплаченные аукционы
+            """
+            auction = []
+            try:
+                conn, cursor = Bank._get_connection_cursor()
+                cursor.execute("SELECT * FROM `bank` WHERE `statusPay` = %s;", ('paid', ))
+                auction = cursor.fetchall()
+            except BaseException:
+                pass
+            finally:
+                cursor.close()
+                conn.close()
+            return auction
+    
+    def update_bank_status(id: int, status: str):
+        """
+        return by `auc_id and user_id`
+        """
+        try:
+            conn, cursor = Bank._get_connection_cursor()
+            if status == 'closed':
+                cursor.execute("UPDATE `bank` SET `statusPay` = %s, `price` = 0 WHERE `id` = %s;", (status, id))
+                conn.commit()
+                done = True
+            else:
+                cursor.execute("UPDATE `bank` SET `statusPay` = %s WHERE `id` = %s;", (status, id))
+                conn.commit()
+                done = True
+        except BaseException:
+            done = False
+        return done
+    
+    def update_bank(auction_id: int, user_id: int, balance: int):
+        """
+        return by `auc_id and user_id`
+        """
+        try:
+            conn, cursor = Bank._get_connection_cursor()
+            cursor.execute("UPDATE `bank` SET `balance` = %s WHERE `auction_id` = %s AND `user_id` = %s;", (balance, auction_id, user_id))
+            conn.commit()
+            done = True
+        except BaseException:
+            done = False
+        return done
+    
+    def update_bank_by_id(id: int, balance: int):
+        """
+        return by `auc_id and user_id`
+        """
+        try:
+            conn, cursor = Bank._get_connection_cursor()
+            cursor.execute("UPDATE `bank` SET `balance` = %s WHERE `id` = %s;", (balance, id))
+            conn.commit()
+            done = True
+        except BaseException:
+            done = False
+        return done
+    
+    def update_payment_bank(
+        auction_id: int,
+        user_id: int,
+        invoice_id: int,
+        asset: str,
+        price: str,
+        amount: str,
+        payment_url: str
+    ) -> int:
+        """
+        Обновляет аукцион по его `id` (только поля для оплаты)
+        """
+        try:
+            conn, cursor = Auction._get_connection_cursor()
+
+            cursor.execute(
+                "UPDATE `bank` SET `invoice_id` = %s, `asset` = %s, price = %s, `amount` = %s, `payment_url` = %s, `statusPay` = 'active', time_invoice = CURRENT_TIMESTAMP() WHERE `auction_id` = %s AND `user_id` = %s;",
+                (invoice_id, asset, price, amount, payment_url, auction_id, user_id)
+            )
+            conn.commit()
+        except BaseException:
+            pass
+        finally:
+            cursor.close()
+            conn.close()
+        return 
+    
+    def update_status_bank(
+        auction_id: int,
+        invoice_id: int,
+        asset: str,
+        statusPay: str,
+        payment_url: str
+    ) -> int:
+        """
+        Обновляет аукцион по его `id` (только поля для оплаты)
+        """
+        try:
+            conn, cursor = Auction._get_connection_cursor()
+
+            cursor.execute(
+                "UPDATE `auction` SET `invoice_id` = %s, `asset` = %s, `statusPay` = %s, `payment_url` = %s WHERE `id` = %s;",
+                (invoice_id, asset, statusPay, payment_url, auction_id)
+            )
+            conn.commit()
+        except BaseException:
+            pass
+        finally:
+            cursor.close()
+            conn.close()
+        return 
+
 class Messages:
     def _get_connection_cursor():
         conn = pymysql.connect(host=conf.get_value('HOST'),
@@ -501,10 +706,10 @@ class Messages:
         """
         Добавляет new message в таблицу `auction_messages`
         """
-        conn, cursor = Bid._get_connection_cursor()
+        conn, cursor = Messages._get_connection_cursor()
         try:
             cursor.execute("INSERT INTO `auction_messages` (`auction_id`, `user_id`, `message_id`) VALUES (%s, %s, %s);",
-                        (str(auction_id), str(tg_id), str(message_id)))
+                        (auction_id, tg_id, message_id))
             conn.commit()
             done = True
         except BaseException:
@@ -518,23 +723,23 @@ class Messages:
         """
         return by `auc_id`
         """
-        conn, cursor = Bid._get_connection_cursor()
-        cursor.execute("SELECT * FROM `auction_messages` WHERE `auction_id` = %s;", (str(auction_id), ))
+        conn, cursor = Messages._get_connection_cursor()
+        cursor.execute("SELECT * FROM `auction_messages` WHERE `auction_id` = %s;", (auction_id, ))
         return cursor.fetchall()
     
     def get_message_by_auction_and_user(auction_id: int, user_id: int):
         """
         return by `auc_id and user_id`
         """
-        conn, cursor = Bid._get_connection_cursor()
-        cursor.execute("SELECT * FROM `auction_messages` WHERE `auction_id` = %s AND `user_id` = %s;", (str(auction_id), str(user_id)))
+        conn, cursor = Messages._get_connection_cursor()
+        cursor.execute("SELECT * FROM `auction_messages` WHERE `auction_id` = %s AND `user_id` = %s;", (auction_id, user_id))
         return cursor.fetchall()
     
     def update_message(auction_id: int, user_id: int, message_id: int):
         """
         return by `auc_id and user_id`
         """
-        conn, cursor = Bid._get_connection_cursor()
-        cursor.execute("UPDATE `auction_messages` SET `message_id` = %s WHERE `auction_id` = %s AND `user_id` = %s;", (str(message_id), str(auction_id), str(user_id)))
+        conn, cursor = Messages._get_connection_cursor()
+        cursor.execute("UPDATE `auction_messages` SET `message_id` = %s WHERE `auction_id` = %s AND `user_id` = %s;", (message_id, auction_id, user_id))
         conn.commit()
         return cursor.fetchall()

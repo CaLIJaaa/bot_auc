@@ -22,6 +22,21 @@ def get_lang_kb() -> ReplyKeyboardMarkup:
     )
     return keyboard.as_markup()
 
+def get_carency_kb(lang_code: str) -> ReplyKeyboardMarkup:
+    """
+    Клавиатура с выбором языка
+    """
+    keyboard = InlineKeyboardBuilder()
+    keyboard.button(
+        text = '$',
+        callback_data=cbd.CarencyCallback(carency='$', lang_code=lang_code)
+    )
+    keyboard.button(
+        text = '€',
+        callback_data=cbd.CarencyCallback(carency='€', lang_code=lang_code)
+    )
+    return keyboard.as_markup()
+
 def get_type_auction_kb(user_id: int) -> ReplyKeyboardMarkup:
     """
     Клавиатура с выбором типа напитка
@@ -91,12 +106,31 @@ def get_auction_detail_kb(user_id: int, auction_id: int) -> ReplyKeyboardMarkup:
     CURRENCY = conf.get_value('CURRENCY')
     STEP = conf.get_value('STEP').split(',')
     keyboard = InlineKeyboardBuilder()
-    for i in STEP:
-        keyboard.button(
-            text = '+' + i + CURRENCY,
-            callback_data=cbd.BidMenuCallback(auction_id=auction_id, bid=int(i))
+    # for i in STEP:
+    #     keyboard.button(
+    #         text = '+' + i + CURRENCY,
+    #         callback_data=cbd.BidMenuCallback(auction_id=auction_id, bid=int(i))
+    #     )
+    keyboard.row(
+        types.InlineKeyboardButton(
+            text = get_msg_lang('do_bid', user_id),
+            callback_data=cbd.BankCallback(bank='do_bid', auction_id=auction_id, user_id=user_id).pack(),
+        ),
+        width=1
+    )
+    keyboard.adjust(1)
+    keyboard.row(
+        types.InlineKeyboardButton(
+            text = get_msg_lang('increace_bank', user_id),
+            callback_data=cbd.BankCallback(bank='increace_bank', auction_id=auction_id, user_id=user_id).pack()
         )
-    keyboard.adjust(3)
+    )
+    keyboard.row(
+        types.InlineKeyboardButton(
+            text = get_msg_lang('get_out', user_id),
+            callback_data=cbd.BankCallback(bank='put_summ', auction_id=auction_id, user_id=user_id).pack()
+        )
+    )
     keyboard.row(
         types.InlineKeyboardButton(
             text = '⌛️',
@@ -117,6 +151,57 @@ def get_auction_detail_kb(user_id: int, auction_id: int) -> ReplyKeyboardMarkup:
             callback_data=cbd.GetBackCallback(page='menu').pack()
         )
     )
+    return keyboard.as_markup()
+
+def get_confirmation_do_bid(user_id: str) -> ReplyKeyboardMarkup:
+    """
+    Клавиатура с подтверждением удаления
+    """
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.button(
+        text = get_msg_lang('admin_menu_yes_msg', user_id),
+        callback_data=cbd.DoBidCallback(status="yes")
+    )
+    keyboard.button(
+        text = get_msg_lang('admin_menu_no_msg', user_id),
+        callback_data=cbd.DoBidCallback(status="no")
+    )
+    keyboard.adjust(2)
+    return keyboard.as_markup()
+
+def get_confirmation_increace(user_id: str) -> ReplyKeyboardMarkup:
+    """
+    Клавиатура с подтверждением удаления
+    """
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.button(
+        text = get_msg_lang('admin_menu_yes_msg', user_id),
+        callback_data=cbd.IncreaceCallback(status="yes")
+    )
+    keyboard.button(
+        text = get_msg_lang('admin_menu_no_msg', user_id),
+        callback_data=cbd.IncreaceCallback(status="no")
+    )
+    keyboard.adjust(2)
+    return keyboard.as_markup()
+
+def get_confirmation_put_summ(user_id: int, auction_id: int) -> ReplyKeyboardMarkup:
+    """
+    Клавиатура с подтверждением удаления
+    """
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.button(
+        text = get_msg_lang('admin_menu_yes_msg', user_id),
+        callback_data=cbd.PutSummCallback(status="yes", user_id=user_id, auction_id=auction_id)
+    )
+    keyboard.button(
+        text = get_msg_lang('admin_menu_no_msg', user_id),
+        callback_data=cbd.PutSummCallback(status="no", user_id=user_id, auction_id=auction_id)
+    )
+    keyboard.adjust(2)
     return keyboard.as_markup()
 
 def get_back_kb(user_id: int) -> ReplyKeyboardMarkup:

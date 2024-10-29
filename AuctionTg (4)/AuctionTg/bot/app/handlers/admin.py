@@ -14,7 +14,7 @@ import app.keyboards.for_admin as kb_adm
 import app.callbackdata.custom as cbd
 import app.messages.for_user as msg_user
 import app.messages.for_admin as msg
-from app.DB.DB import User, Auction, Bid, Messages
+from app.DB.DB import User, Auction, Bid, Messages, Bank
 from app.helper.config import Config
 
 router = Router()
@@ -196,8 +196,8 @@ async def description_set_(message: Message, state: FSMContext):
     try:
         if User.is_user_admin(message.from_user.id):
             description_ru, description_en = message.text.split('///')
-            await state.update_data(description_ru=description_ru.strip()[:500])
-            await state.update_data(description_en=description_en.strip()[:500])
+            await state.update_data(description_ru=description_ru.strip()[:5000])
+            await state.update_data(description_en=description_en.strip()[:5000])
             await message.answer(
                 text=msg.price_set_msg(message.from_user.id)
             )
@@ -410,6 +410,11 @@ async def delete_auction(query: CallbackQuery, callback_data: cbd.AuctionSetting
                 if len(Auction.get_opened_auction_by_id(callback_data.auction_id)) != 0 and \
                     Auction.get_auction_by_id(callback_data.auction_id)[0]['picture'] != None: # Аукцион с фото
 
+                    bank = Bank.get_bank_by_auction_and_user(callback_data.auction_id, user['tg_id'])
+                    if len(bank) == 0:
+                        Bank.create_bank(callback_data.auction_id, user['tg_id'])
+                    print(callback_data.auction_id, user['tg_id'])
+
                     photo = FSInputFile(
                         os.path.join(STATIC_PATH, 
                                      Auction.get_auction_by_id(callback_data.auction_id)[0]['picture'])
@@ -417,10 +422,14 @@ async def delete_auction(query: CallbackQuery, callback_data: cbd.AuctionSetting
                     message = await query.bot.send_photo(
                         chat_id=user['tg_id'],
                         photo=photo,
-                        caption=msg_user.msg_auction(query.from_user.id, callback_data.auction_id),
-                        reply_markup=kb_usr.get_auction_detail_kb(query.from_user.id, callback_data.auction_id)
+                        caption=msg_user.msg_auction(user['tg_id'], callback_data.auction_id),
+                        reply_markup=kb_usr.get_auction_detail_kb(user['tg_id'], callback_data.auction_id)
                     )
-                    Messages.add_message(callback_data.auction_id, user['tg_id'], message.message_id)
+                    user_message = Messages.get_message_by_auction_and_user(callback_data.auction_id, user['tg_id'])
+                    if not(user_message):
+                        Messages.add_message(callback_data.auction_id, user['tg_id'], message.message_id)
+                    else:
+                        Messages.update_message(callback_data.auction_id, user['tg_id'], message.message_id)
     except BaseException:
         await query.answer(
                 text='Error'

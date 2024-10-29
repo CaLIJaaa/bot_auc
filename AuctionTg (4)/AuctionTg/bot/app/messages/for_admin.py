@@ -132,13 +132,14 @@ def msg_auction(tg_id: int, auction_id: str) -> str:
     last_price = auction['money'] if auction['money'] else auction['price']
     msg = (get_msg_lang('lot_msg', tg_id) % (auction['name'], 
                                             auction['type'], 
-                                            f'{auction['volume']} л' if userLang == 'ru' else f'{auction['volume'] * 100} cl' if auction['volume'] else 0, 
-                                            f'{auction['abv']}%', 
-                                            auction['country_ru'] if userLang == 'ru' else auction['country_en'], 
-                                            auction['brand'], 
-                                            auction['produser'], 
-                                            auction['description_ru'] if userLang == 'ru' else auction['description_en'],
+                                            (f'{auction['volume']} л' if userLang == 'ru' else f'{auction['volume'] * 100} cl') if auction['volume'] else '-', 
+                                            (f'{auction['abv']}%') if auction['abv'] else '-', 
+                                            (auction['country_ru'] if userLang == 'ru' else auction['country_en']) if auction['country_ru'] or auction['country_en'] else '-', 
+                                            (auction['brand']) if auction['brand'] else '-', 
+                                            (auction['produser']) if auction['produser'] else '-', 
+                                            (auction['description_ru'] if userLang == 'ru' else auction['description_en']) if auction['description_en'] or auction['description_ru'] else '-',
                                             last_price, 
+                                            '-',
                                             conf.get_value('CURRENCY')))
     return msg
 

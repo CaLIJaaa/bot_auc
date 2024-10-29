@@ -14,7 +14,7 @@ import app.keyboards.for_user as kb_usr
 import app.callbackdata.custom as cbd
 import app.messages.for_user as msg
 import app.messages.for_admin as msg_adm
-from app.DB.DB import User, Auction, Bid, Messages
+from app.DB.DB import User, Auction, Bid, Messages, Bank
 import pymysql.cursors
 from app.helper.config import Config
 from app.cryptoPay import cryptoPay
@@ -141,6 +141,22 @@ class AuctionControllerDB():
             conn.close()
         return losers
     
+    def get_max_bid(auction_id: int, user_id: int):
+        """
+        Возвращает список пользователей, которые не смогли победить в аукционе
+        """
+        losers = []
+        try:
+            conn, cursor = AuctionControllerDB._get_connection_cursor()
+            cursor.execute("SELECT * FROM bid where money = (select max(money) from bid WHERE user_id = %s AND auction_id = %s);", (str(user_id), str(auction_id)))
+            losers = cursor.fetchone()
+        except BaseException:
+            pass
+        finally:
+            cursor.close()
+            conn.close()
+        return losers
+    
     def get_winner_by_auction_id(auction_id: int):
         """
         Возвращает пользователя, который победил в аукционе
@@ -197,17 +213,18 @@ def controller(bot, loop):
         time_to_close = AuctionControllerDB.get_min_time_to_update()
         time_to_close = time_to_close if time_to_close else 0
         auctions = AuctionControllerDB.close_auction()
-        paidAuctions = AuctionControllerDB.get_paid_auctions()
-        expired = AuctionControllerDB.expired_auction()
+        paidBanks = Bank.get_paid_banks()
+        # expired = AuctionControllerDB.expired_auction()
         update_auctions = AuctionControllerDB.get_auction_by_update_date()
+        print(update_auctions)
 
         between_callback_checkInvoice(loop=loop)
 
-        if len(expired) > 0:
-            between_callback_expired(expired, bot, loop=loop)
+        # if len(expired) > 0:
+        #     between_callback_expired(expired, bot, loop=loop)
 
-        if len(paidAuctions) > 0:
-            between_callback_paid(paidAuctions, bot, loop=loop)
+        if len(paidBanks) > 0:
+            between_callback_paid(paidBanks, bot, loop=loop)
 
         if len(update_auctions) > 0:
             between_callback_update(update_auctions, bot, loop=loop)
@@ -237,11 +254,11 @@ def between_callback_update(*args, loop):
     send_fut = asyncio.run_coroutine_threadsafe(update_auctions(*args), loop)
     send_fut.result()
 
-def between_callback_expired(*args, loop):
-    asyncio.set_event_loop(loop)
+# def between_callback_expired(*args, loop):
+#     asyncio.set_event_loop(loop)
 
-    send_fut = asyncio.run_coroutine_threadsafe(send_expired(*args), loop)
-    send_fut.result()
+#     send_fut = asyncio.run_coroutine_threadsafe(send_expired(*args), loop)
+#     send_fut.result()
 
 def between_callback_checkInvoice(*args, loop):
     asyncio.set_event_loop(loop)
@@ -261,6 +278,11 @@ async def send_notification(auction, bot):
                 await bot.send_message(user['tg_id'], 
                                     msg.losers_msg(user['tg_id'], auction_name),
                                     reply_markup=kb_usr.get_back_kb(user['tg_id']))
+                max_bid = AuctionControllerDB.get_max_bid(auction[0]['id'], user['id'])
+                if max_bid:
+                    bank = Bank.get_bank_by_auction_and_user(auction[0]['id'], user['id'])
+                    Bank.update_bank(auction[0]['id'], user['id'], int(bank[0]['balance'] + int(max_bid['money'])))
+
             except BaseException:
                 pass
 
@@ -270,7 +292,7 @@ async def send_notification(auction, bot):
             try:
                 await bot.send_message(user[0]['tg_id'], 
                                     msg.winners_msg(user[0]['tg_id'], money),
-                                    reply_markup=kb_usr.get_pay_way_kb(auction[0]['id'], user[0]['tg_id'], money))
+                                    reply_markup=kb_usr.get_back_kb(auction[0]['id'], user[0]['tg_id'], money))
                 admins = User.get_admins()
                 for admin in admins:
                     try:
@@ -282,26 +304,19 @@ async def send_notification(auction, bot):
             except BaseException:
                 pass
 
-    Auction.update_auction(auction[0]['id'], 'statusPay', 'active')
-
-async def send_paid(auction, bot):
-    user, money = AuctionControllerDB.get_winner_by_auction_id(auction[0]['id'])
-    auction_name = Auction.get_auction_by_id(auction[0]['id'])
-    auction_name = auction_name[0]['name'] if len(auction_name) > 0 else ''
-    try:
-        await bot.send_message(user[0]['tg_id'], 
-                                msg.successful_payment_msg(user[0]['tg_id'], auction_name),
-                                reply_markup=kb_usr.get_back_kb(user[0]['tg_id']))
-        admins = User.get_admins()
-        for admin in admins:
-            try:
-                await bot.send_message(admin['tg_id'], 
-                msg_adm.successful_payment_msg(user[0]['tg_id'], user[0]['tg_link'], auction_name))
-            except BaseException:
-                pass
-        Auction.update_auction(auction[0]['id'], 'statusPay', 'closed')
-    except BaseException:
-        pass
+async def send_paid(banks, bot):
+    for bank in banks:
+        user = User.get_user_by_tg_id(bank['user_id'])
+        # auction = Auction.get_auction_by_id(bank['auction_id'])
+        # auction_name = auction[0]['name'] if len(auction[0]['name']) > 0 else ''
+        try:
+            await bot.send_message(user[0]['tg_id'], 
+                                    msg.successful_payment_msg(user[0]['tg_id'], bank['price']),
+                                    reply_markup=kb_usr.get_back_kb(user[0]['tg_id']))
+            Bank.update_bank_by_id(bank['id'], int(bank['price']) + int(bank['balance']))
+            Bank.update_bank_status(bank['id'], 'closed')
+        except BaseException as e:
+            print(e)
 
 async def update_auctions(auctions, bot):
     messages = Messages.get_message_by_auction(auctions[0]['id'])
@@ -342,20 +357,20 @@ async def update_auctions(auctions, bot):
         except BaseException:
             pass
 
-async def send_expired(auction, bot):
-    winner, money = AuctionControllerDB.get_winner_by_auction_id(auction[0]['id'])
-    lossers = AuctionControllerDB.get_losers_by_auction_id(auction[0]['id'])
-    print(winner, lossers)
-    second_place = User.get_user_by_id(lossers[0]['user_id'])[0]['tg_link'] if len(lossers) > 0 else ''
-    third_place = User.get_user_by_id(lossers[0]['user_id'])[0]['tg_link'] if len(lossers) > 1 else ''
-    try:
-        admins = User.get_admins()
-        for admin in admins:
-            try:
-                await bot.send_message(admin['tg_id'], 
-                msg_adm.expired_payment_msg(winner[0]['tg_id'], winner[0]['tg_link'], second_place, third_place, money))
-            except BaseException:
-                pass
-        Auction.update_auction(auction[0]['id'], 'statusPay', 'closed')
-    except BaseException:
-        pass
+# async def send_expired(auction, bot):
+#     winner, money = AuctionControllerDB.get_winner_by_auction_id(auction[0]['id'])
+#     lossers = AuctionControllerDB.get_losers_by_auction_id(auction[0]['id'])
+#     print(winner, lossers)
+#     second_place = User.get_user_by_id(lossers[0]['user_id'])[0]['tg_link'] if len(lossers) > 0 else ''
+#     third_place = User.get_user_by_id(lossers[0]['user_id'])[0]['tg_link'] if len(lossers) > 1 else ''
+#     try:
+#         admins = User.get_admins()
+#         for admin in admins:
+#             try:
+#                 await bot.send_message(admin['tg_id'], 
+#                 msg_adm.expired_payment_msg(winner[0]['tg_id'], winner[0]['tg_link'], second_place, third_place, money))
+#             except BaseException:
+#                 pass
+#         Auction.update_auction(auction[0]['id'], 'statusPay', 'closed')
+#     except BaseException:
+#         pass

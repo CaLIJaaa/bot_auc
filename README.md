@@ -21,6 +21,9 @@
 После этого необходимо создать файл `config.yaml` в папке `bot/app/data/` со следующей структурой:
 ```
 ANTISNIPER: 0 # Не трогать
+ANTISNIPER_FIX: 300
+CURRENCY: $
+CRYPTO_PAY_TOKEN: 220937:AA6OspEySodIfQiyfXipXqhZP6rFN5Utabq
 CURRENCY: $ # Не трогать
 DATABASE: auction-db # [ИМЯ_БД] из пункта выше
 HELP: help.mp4 # Название видео для помощи в папке static
@@ -28,6 +31,7 @@ HOST: localhost # хост базы данных, если просто на л�
 LOGO: logo.jpeg # Название файла с логотипом в папке static
 LOOSE_NOTIFICATION: true # Не трогать
 PASSWORD: root # пароль от  базы данных
+PAY_EXPARATION: 400
 SETTINGS:
   en: 'Auction rules
 
@@ -38,6 +42,7 @@ STEP: 1,5,10,50,100,200 # Не трогать
 USER: root # пользователь в базе данных, не трогать
 WIN_NOTIFICATION: true # Не трогать
 bot_token: 123:adsfkKL # API токен для бота 
+UPDATE_INTERVAL: 10
 ```
  - bot_token - получить в телеграмм боте botfather
  - user - пользователь в базе данных, проще оставить root

@@ -9,6 +9,26 @@ class MyCallback(CallbackData, prefix="my"):
 class LangCallback(CallbackData, prefix="lang"):
     lang_code: str
 
+class CarencyCallback(CallbackData, prefix="carency"):
+    carency: str
+    lang_code: str
+
+class BankCallback(CallbackData, prefix="bank"):
+    bank: str
+    auction_id: int
+    user_id: int
+
+class DoBidCallback(CallbackData, prefix="do_bid"):
+    status: str
+
+class IncreaceCallback(CallbackData, prefix="increace"):
+    status: str
+
+class PutSummCallback(CallbackData, prefix="increace"):
+    status: str
+    auction_id: int
+    user_id: int
+
 class TypeAUCallback(CallbackData, prefix="typeAu"):
     auction_type: str
 

@@ -11,6 +11,10 @@
         "ru": "Оплатить",
         "en": "Pay"
     },
+    "payment_msg_error": {
+        "ru": "Извините, но чтобы пополнить банк, оплатите предыдущую транзакцию",
+        "en": "Pay"
+    },
     "pay_way_msg": {
         "ru": "Выберите способ оплаты",
         "en": "Choose Pay Way"
@@ -39,12 +43,80 @@
         "ru": "Вернуться на главную",
         "en": "Return"
     },
+    "do_bid": {
+        "ru": "Сделать ставку",
+        "en": "Place a bid"
+    },
+    "do_bid_msg": {
+        "ru": "Укажите сумму, которую хотите поставить.\n*Важно. Сумма не может быть больше вашего банка",
+        "en": "Specify the amount you want to bet.\n*Important. The amount cannot be more than your bank"
+    },
+    "do_bid_msg_sure": {
+        "ru": "Вы хотите сделать ставку на сумму *%s*?",
+        "en": "Do you want to place a bet on the amount *%s*?"
+    },
+    "do_bid_msg_cancel": {
+        "ru": "К сожалению вы не можете поставить ставку такого размера\nУвеличьте свой банк и возвращайтесь!",
+        "en": "Unfortunately, you cannot place a bet of this size. Increase your bank and come back!"
+    },
+    "do_bid_msg_success": {
+        "ru": "Вы поставили *%s* в данном аукционе",
+        "en": "You have placed *%s* in this auction"
+    },
+    "increace_bank": {
+        "ru": "Увеличить банк",
+        "en": "Increase the bank"
+    },
+    "increace_bank_summ": {
+        "ru": "Укажите сумму, на которую хотите увеличить ваш банк в данном аукционе",
+        "en": "Specify the amount by which you want to increase your bank in this auction"
+    },
+    "increace_bank_sure": {
+        "ru": "Вы хотите увеличить ваш банк на %s $",
+        "en": "Specify the amount by which you want to increase your bank in this auction"
+    },
+    "increace_bank_low": {
+        "ru": "Извините, но ставка должна быть больше предыдущей",
+        "en": "Sorry, but the bid must be higher than the previous one"
+    },
+    "increace_bank_error": {
+        "ru": "Вы хотите увеличить ваш банк на %s $",
+        "en": "Specify the amount by which you want to increase your bank in this auction"
+    },
+    "put_summ": {
+        "ru": "Вы точно хотите вывести ваш банк с этого аукциона?",
+        "en": "Are you sure you want to withdraw your bank from this auction?"
+    },
+    "put_summ_success": {
+        "ru": "Вы успешно вывели ваш банк",
+        "en": "You have successfully withdrawn your bank"
+    },
+    "put_summ_error": {
+        "ru": "Произошла ошибка при выводе",
+        "en": "An error occurred during the output"
+    },
+    "put_summ_empty": {
+        "ru": "Извините, но ваш банк пуст",
+        "en": "Sorry, but your bank is empty"
+    },
+    "get_out": {
+        "ru": "Вывести сумму",
+        "en": "Withdraw the amount"
+    },
+    "get_out_msg": {
+        "ru": "Вывести сумму",
+        "en": "Withdraw the amount"
+    },
     "user_menu_msg": {
         "ru": "Привет, я PuninWine Auction Bot!\nУчаствуй в аукционах на коллекционные вина и виски! Выберите интересующую вас категорию напитков",
         "en": "Hello, I am PuninWine Auction Bot!\nTake part in the auctions of collectible wines and whiskey! Pick the category that you are interested in"
     },
+    "user_carency_msg": {
+        "ru": "Выберите валюту, в которой хотите пополнить баланс",
+        "en": "Select the currency in which you want to top up your balance"
+    },
     "lot_msg": {
-        "ru": "Название: %s\nТип: %s\nОбъём: %s\nКрепость: %s\nСтрана: %s\nБренд: %s\nПроизводитель: %s\nОписание: %s\n\nЦена: %s%s\n",
+        "ru": "Название: %s\nТип: %s\nОбъём: %s\nКрепость: %s\nСтрана: %s\nБренд: %s\nПроизводитель: %s\nОписание: %s\n\nЦена: %s$\nВаша максимальная ставка (банк): %s%s\n",
         "en": "Name: %s\nType: %s\nVolume: %s\nABV: %s\nCountry: %s\nBrand: %s\nManufacturer: %s\nDescription: %s\n\nPrice: %s%s\n"
     },
     "lot_your_bid_msg": {
@@ -60,8 +132,8 @@
         "en": "Unfortunately, you lost in the auction %s\nThank you for participating, and we look forward to seeing you in the next auction!"
     },
     "user_win_msg": {
-        "ru": "Поздравляю победителя аукциона!\nЛот продан за %s $\nВыберите способ оплаты",
-        "en": "Congratulations to the auction winner!\nThe lot was sold for %s $\nChoose payment method"
+        "ru": "Поздравляю победителя аукциона!\nС вами скоро свяжутся, о получении лота.\nСпасибо за участие в аукционе на %s\nЖдем вас на следующих торгах",
+        "en": "Congratulations to the auction winner!\nYou will be contacted soon about receiving the lot.Thank you for participating in the auction at %s. We are waiting for you at the following auctions"
     },
     "payment_method_1_msg": {
         "ru": "USDT TRC20",
@@ -72,8 +144,8 @@
         "en": "BITCOIN"
     },
     "user_successful_payment_msg": {
-        "ru": "Оплата прошла успешно!\nС вами скоро свяжутся о получении лота.\nСпасибо за участие в аукционе на %s. Ждем вас на следующих торгах!",
-        "en": "Payment was successful!\nYou will be contacted soon about receiving the lot.\nThank you for participating in the %s auction. We look forward to seeing you in future auctions!"
+        "ru": "Оплата прошла успешно!\nВаш банк увеличен на %s$",
+        "en": "The payment was successful!Your bank has been increased by %s$"
     },
     "admin_info_msg": {
         "ru": "Вы назначены администратором данного бота.\nТеперь вы можете создавать и управлять аукционами, назначать администраторов.\nЧтобы перейти в панель управления, напишите /menu",
@@ -368,8 +440,8 @@
         "en": "Are you sure you want to remove %s from the bot administrators?"
     },
     "admin_notification_auction_end_msg": {
-        "ru": "Аукцион завершен!\nЛот продан за %s$\nОжидаем оплату от победителя.\nСвязаться с победителем аукциона @%s",
-        "en": "Auction ended!\nThe lot was sold for %s$\nAwaiting payment from the winner.\nContact the auction winner @%s"
+        "ru": "Аукцион завершен!\nЛот продан за %s$\nСвязаться с победителем аукциона @%s",
+        "en": "Auction ended!\nThe lot was sold for %s$\nContact the auction winner @%s"
     },
     "admin_notification_successful_payment_msg": {
         "ru": "Победитель оплатил лот.\nСвяжитесь с победителем для завершения сделки: @%s\nаукцион - %s",
